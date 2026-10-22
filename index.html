@@ -1,0 +1,1497 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>USDT BEP-20 Task & Trading Platform</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Lucide Icons CDN -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        brand: {
+                            50: '#e6f7f1',
+                            100: '#cceee3',
+                            500: '#00B074',
+                            600: '#009a65',
+                            700: '#00875A',
+                            800: '#006543',
+                            900: '#00432c',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+        
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f1f5f9;
+            color: #1e293b;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        .hide-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .hide-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+
+        .card-shadow {
+            box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.05);
+        }
+
+        .gift-glow {
+            box-shadow: 0 0 15px rgba(0, 176, 116, 0.4);
+        }
+    </style>
+</head>
+<body class="flex flex-col min-h-screen max-w-md mx-auto bg-slate-100 shadow-2xl relative pb-20 select-none">
+
+    <!-- ================= TOP HEADER ================= -->
+    <header id="appHeader" class="bg-white px-4 py-3 sticky top-0 z-30 border-b border-slate-200/80 flex justify-between items-center">
+        <div class="flex items-center gap-2">
+            <button id="headerBackBtn" onclick="goBack()" class="hidden p-1 text-slate-600 hover:text-slate-900">
+                <i data-lucide="chevron-left" class="w-6 h-6"></i>
+            </button>
+            <h1 id="headerTitle" class="text-xl font-bold text-slate-800 tracking-tight">Home</h1>
+        </div>
+
+        <div class="flex items-center gap-2">
+            <span class="text-[11px] font-semibold text-brand-700 bg-brand-50 px-2 py-0.5 rounded-full border border-brand-100">v90</span>
+            
+            <button onclick="copyText(document.getElementById('userIdText').innerText, 'User ID Copied!')" class="flex items-center gap-1 text-[11px] font-semibold text-slate-600 bg-slate-100 px-2 py-0.5 rounded-full border border-slate-200 hover:bg-slate-200 transition-all">
+                <span id="userIdText">Guest</span>
+                <i data-lucide="copy" class="w-3 h-3 text-slate-400"></i>
+            </button>
+
+            <button onclick="openSupportTelegram()" class="p-1 text-slate-600 hover:text-brand-600 transition-all">
+                <i data-lucide="headset" class="w-5 h-5"></i>
+            </button>
+        </div>
+    </header>
+
+    <!-- ================= MAIN SCROLLABLE CONTENT AREA ================= -->
+    <main class="flex-1 p-4 overflow-y-auto hide-scrollbar space-y-4">
+
+        <!-- ================= TAB 1: HOME PAGE ================= -->
+        <section id="tabHome" class="tab-content space-y-4">
+            <div class="bg-gradient-to-r from-emerald-800 via-brand-700 to-brand-500 rounded-2xl p-4 text-white relative overflow-hidden card-shadow">
+                <div class="relative z-10 max-w-[65%] space-y-1">
+                    <div class="inline-block px-2 py-0.5 bg-amber-400 text-slate-900 text-[10px] font-black rounded uppercase tracking-wider">Limited Time</div>
+                    <h2 class="text-lg font-black leading-tight">NEW USER REWARDS USDT</h2>
+                    <p class="text-[11px] text-emerald-100">Welcome bonus for new app users. Claimable once per account.</p>
+                    <button id="claimRewardBtn" onclick="claimNewUserReward()" class="mt-2 px-3 py-1.5 bg-amber-400 hover:bg-amber-300 text-slate-900 text-xs font-bold rounded-lg shadow-sm transition-all flex items-center gap-1">
+                        <span>CLAIM REWARD</span>
+                        <i data-lucide="chevron-right" class="w-3.5 h-3.5"></i>
+                    </button>
+                </div>
+                <div class="absolute -right-2 -bottom-4 w-32 h-32 opacity-80 pointer-events-none flex items-center justify-center">
+                    <i data-lucide="gift" class="w-24 h-24 text-amber-300"></i>
+                </div>
+            </div>
+
+            <div class="bg-brand-50/60 border border-brand-100 p-4 rounded-2xl space-y-3 card-shadow">
+                <h3 class="text-xs font-bold text-slate-700 uppercase tracking-wider">Today's Trading</h3>
+                <div class="grid grid-cols-2 gap-3">
+                    <div class="bg-white p-3 rounded-xl border border-slate-100">
+                        <p class="text-[11px] text-slate-400 font-medium">Sale amount</p>
+                        <p class="text-base font-bold text-slate-800 mt-0.5"><span id="homeSaleAmount">0.00</span> USDT</p>
+                        <p class="text-[10px] text-slate-400 mt-1">Sale orders: 0</p>
+                    </div>
+                    <div class="bg-white p-3 rounded-xl border border-slate-100">
+                        <p class="text-[11px] text-slate-400 font-medium">Purchase amount</p>
+                        <p class="text-base font-bold text-slate-800 mt-0.5"><span id="homePurchaseAmount">0.00</span> USDT</p>
+                        <p class="text-[10px] text-slate-400 mt-1">Purchase orders: 0</p>
+                    </div>
+                </div>
+
+                <div class="bg-white p-3 rounded-xl border border-slate-100 flex justify-between items-center">
+                    <div class="flex items-center gap-2">
+                        <div class="p-1.5 bg-brand-50 text-brand-600 rounded-lg">
+                            <i data-lucide="award" class="w-4 h-4"></i>
+                        </div>
+                        <span class="text-xs font-bold text-slate-700">Today's income</span>
+                    </div>
+                    <span class="text-sm font-extrabold text-brand-700"><span id="homeTodayIncome">0.00</span> USDT</span>
+                </div>
+            </div>
+
+            <div class="bg-brand-50/60 border border-brand-100 p-4 rounded-2xl space-y-2 card-shadow">
+                <h3 class="text-xs font-bold text-slate-700 uppercase tracking-wider">Rates & Rewards</h3>
+                <div class="grid grid-cols-2 gap-3">
+                    <div class="bg-white p-3 rounded-xl border border-slate-100">
+                        <p class="text-[10px] text-slate-400 font-medium">USDT exchange</p>
+                        <p class="text-xs font-bold text-brand-700 mt-0.5">1 USDT ≈ 1.00 USDT</p>
+                        <p class="text-[9px] text-slate-400 mt-0.5">Network: BEP-20</p>
+                    </div>
+                    <div class="bg-white p-3 rounded-xl border border-slate-100">
+                        <p class="text-[10px] text-slate-400 font-medium">USDT bonus</p>
+                        <p class="text-base font-extrabold text-brand-700 mt-0.5">3.00%</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="space-y-2">
+                <h3 class="text-xs font-bold text-slate-700 uppercase tracking-wider">Tutorials</h3>
+                <div class="space-y-2">
+                    <div onclick="showTutorial('bep20')" class="bg-white p-3 rounded-xl border border-slate-200/80 flex items-center justify-between cursor-pointer hover:border-brand-500 transition-all card-shadow">
+                        <div class="flex items-center gap-3">
+                            <div class="w-10 h-10 bg-amber-100 text-amber-600 rounded-lg flex items-center justify-center font-bold text-xs">
+                                USDT
+                            </div>
+                            <div>
+                                <p class="text-xs font-bold text-slate-800">USDT BEP-20 Deposit Guide</p>
+                                <p class="text-[10px] text-slate-400">Step-by-step tutorial on BEP-20 transfers</p>
+                            </div>
+                        </div>
+                        <i data-lucide="chevron-right" class="w-4 h-4 text-slate-400"></i>
+                    </div>
+
+                    <div onclick="showTutorial('wallet')" class="bg-white p-3 rounded-xl border border-slate-200/80 flex items-center justify-between cursor-pointer hover:border-brand-500 transition-all card-shadow">
+                        <div class="flex items-center gap-3">
+                            <div class="w-10 h-10 bg-brand-50 text-brand-600 rounded-lg flex items-center justify-center font-bold">
+                                <i data-lucide="wallet" class="w-5 h-5"></i>
+                            </div>
+                            <div>
+                                <p class="text-xs font-bold text-slate-800">Connect BEP-20 Wallet Tutorial</p>
+                                <p class="text-[10px] text-slate-400">How to link Binance USDT wallet address</p>
+                            </div>
+                        </div>
+                        <i data-lucide="chevron-right" class="w-4 h-4 text-slate-400"></i>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ================= TAB 2: BUY PAGE ================= -->
+        <section id="tabBuy" class="tab-content hidden space-y-4">
+            <div class="bg-brand-50/60 border border-brand-100 p-4 rounded-2xl space-y-3 card-shadow">
+                <div class="flex justify-between items-center">
+                    <div>
+                        <h3 class="text-sm font-bold text-slate-800">Buy Platform Balance</h3>
+                        <p class="text-[11px] text-slate-500">Choose package amount and wallet.</p>
+                    </div>
+                    <button onclick="openPurchaseRecordsView()" class="flex items-center gap-1 text-xs font-bold text-brand-700 bg-white px-2.5 py-1 rounded-lg border border-brand-200">
+                        <i data-lucide="receipt" class="w-3.5 h-3.5"></i>
+                        <span>Purchase records</span>
+                    </button>
+                </div>
+
+                <div class="grid grid-cols-1 bg-slate-200/60 p-1 rounded-xl">
+                    <button class="py-2 bg-brand-600 text-white font-bold text-xs rounded-lg shadow-sm text-center">
+                        USDT (BEP-20)
+                    </button>
+                </div>
+            </div>
+
+            <div class="flex gap-2 overflow-x-auto hide-scrollbar pb-1">
+                <button onclick="filterPackages('all')" class="pkg-filter-btn px-3 py-1.5 bg-brand-600 text-white text-xs font-bold rounded-lg border border-brand-600 whitespace-nowrap">All Tasks</button>
+                <button onclick="filterPackages('10-50')" class="pkg-filter-btn px-3 py-1.5 bg-white text-slate-600 text-xs font-semibold rounded-lg border border-slate-200 whitespace-nowrap">10 - 50 USDT</button>
+                <button onclick="filterPackages('50-200')" class="pkg-filter-btn px-3 py-1.5 bg-white text-slate-600 text-xs font-semibold rounded-lg border border-slate-200 whitespace-nowrap">50 - 200 USDT</button>
+                <button onclick="filterPackages('200-1000')" class="pkg-filter-btn px-3 py-1.5 bg-white text-slate-600 text-xs font-semibold rounded-lg border border-slate-200 whitespace-nowrap">200 - 1000 USDT</button>
+            </div>
+
+            <div id="packageListContainer" class="space-y-3"></div>
+        </section>
+
+        <!-- ================= TAB 3: SELL PAGE (WALLET & COLLECTION) ================= -->
+        <section id="tabSell" class="tab-content hidden space-y-4">
+            <div class="bg-brand-50/60 border border-brand-100 p-4 rounded-2xl flex justify-between items-center card-shadow">
+                <div>
+                    <h3 class="text-sm font-bold text-slate-800">Wallet Services</h3>
+                    <p class="text-[11px] text-slate-500">Manage connected BEP-20 wallets.</p>
+                    <div class="flex items-center gap-2 mt-2">
+                        <span class="px-2 py-0.5 bg-white border border-slate-200 rounded text-[10px] font-bold text-slate-600" id="walletCountText">0 connected</span>
+                        <span id="collectionStatusBadge" class="px-2 py-0.5 bg-rose-100 text-rose-700 border border-rose-200 rounded text-[10px] font-bold">0 online</span>
+                    </div>
+                </div>
+                <button onclick="openCollectionRecordsView()" class="flex items-center gap-1 text-xs font-bold text-brand-700 bg-white px-2.5 py-1.5 rounded-xl border border-brand-200">
+                    <i data-lucide="wallet" class="w-4 h-4"></i>
+                    <span>Collection Records</span>
+                </button>
+            </div>
+
+            <div id="walletsContainer" class="space-y-3"></div>
+
+            <button onclick="openAddWalletModal()" class="w-full py-3.5 bg-brand-700 hover:bg-brand-800 text-white font-bold text-sm rounded-2xl shadow-md transition-all flex items-center justify-center gap-2">
+                <i data-lucide="plus-circle" class="w-5 h-5"></i>
+                <span>Add Wallet</span>
+            </button>
+        </section>
+
+        <!-- ================= TAB 4: MINE PAGE ================= -->
+        <section id="tabMine" class="tab-content hidden space-y-4">
+            <div class="bg-brand-50/70 border border-brand-100 p-4 rounded-2xl space-y-3 card-shadow">
+                <div class="flex items-center gap-3">
+                    <div class="w-14 h-14 bg-slate-900 rounded-full flex items-center justify-center border-2 border-brand-500 text-amber-400 overflow-hidden relative">
+                        <i data-lucide="user" class="w-8 h-8"></i>
+                    </div>
+                    <div>
+                        <h3 class="text-base font-bold text-slate-900" id="userPhoneDisplay">Not Logged In</h3>
+                        <p class="text-lg font-black text-brand-700"><span id="mineBalance">0.00</span> USDT</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-2 gap-3">
+                <div onclick="openBalanceDetailsView()" class="bg-white p-3.5 rounded-xl border border-slate-200/80 flex items-center gap-3 cursor-pointer card-shadow hover:border-brand-500 transition-all">
+                    <div class="p-2 bg-brand-50 text-brand-700 rounded-lg">
+                        <i data-lucide="receipt" class="w-5 h-5"></i>
+                    </div>
+                    <div>
+                        <p class="text-xs font-bold text-slate-800">Balance Details</p>
+                        <p class="text-[10px] text-slate-400">View transactions</p>
+                    </div>
+                </div>
+
+                <div onclick="openTeamManagement()" class="bg-white p-3.5 rounded-xl border border-slate-200/80 flex items-center gap-3 cursor-pointer card-shadow hover:border-brand-500 transition-all">
+                    <div class="p-2 bg-emerald-50 text-emerald-700 rounded-lg">
+                        <i data-lucide="users" class="w-5 h-5"></i>
+                    </div>
+                    <div>
+                        <p class="text-xs font-bold text-slate-800">My Team</p>
+                        <p class="text-[10px] text-slate-400">Referral matrix</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-white rounded-2xl border border-slate-200/80 divide-y divide-slate-100 card-shadow overflow-hidden">
+                <div onclick="openPurchaseRecordsView()" class="p-3.5 flex items-center justify-between cursor-pointer hover:bg-slate-50">
+                    <div class="flex items-center gap-3">
+                        <i data-lucide="file-text" class="w-5 h-5 text-brand-600"></i>
+                        <span class="text-xs font-bold text-slate-800">Order History</span>
+                    </div>
+                    <i data-lucide="chevron-right" class="w-4 h-4 text-slate-400"></i>
+                </div>
+
+                <div onclick="openSupportTelegram()" class="p-3.5 flex items-center justify-between cursor-pointer hover:bg-slate-50">
+                    <div class="flex items-center gap-3">
+                        <i data-lucide="headset" class="w-5 h-5 text-brand-600"></i>
+                        <span class="text-xs font-bold text-slate-800">Live Support</span>
+                    </div>
+                    <i data-lucide="chevron-right" class="w-4 h-4 text-slate-400"></i>
+                </div>
+
+                <div onclick="openFAQModal()" class="p-3.5 flex items-center justify-between cursor-pointer hover:bg-slate-50">
+                    <div class="flex items-center gap-3">
+                        <i data-lucide="help-circle" class="w-5 h-5 text-brand-600"></i>
+                        <span class="text-xs font-bold text-slate-800">Common Questions</span>
+                    </div>
+                    <i data-lucide="chevron-right" class="w-4 h-4 text-slate-400"></i>
+                </div>
+
+                <div onclick="logoutUser()" class="p-3.5 flex items-center justify-between cursor-pointer hover:bg-slate-50">
+                    <div class="flex items-center gap-3">
+                        <i data-lucide="power" class="w-5 h-5 text-rose-500"></i>
+                        <span class="text-xs font-bold text-rose-600">Log out</span>
+                    </div>
+                    <i data-lucide="chevron-right" class="w-4 h-4 text-slate-400"></i>
+                </div>
+            </div>
+        </section>
+
+        <!-- ================= FULL PAGE VIEW: 7-DAY REWARD TASKS ================= -->
+        <section id="viewRewardTasks" class="hidden space-y-4">
+            <div class="bg-gradient-to-r from-brand-800 via-brand-600 to-emerald-500 rounded-2xl p-4 text-white space-y-2 card-shadow">
+                <div class="flex justify-between items-center">
+                    <span class="px-2.5 py-0.5 bg-amber-400 text-slate-900 text-[10px] font-black rounded-full uppercase">7-Day Challenge</span>
+                    <span class="text-xs font-bold text-emerald-100">Total Reward: 5.00 USDT</span>
+                </div>
+                <h2 class="text-lg font-extrabold tracking-tight">Complete Buy Tasks & Earn Rewards</h2>
+                <p class="text-[11px] text-emerald-100 leading-relaxed">Buy packages daily to reach task targets. Earn up to $5.00 USDT in 7 days!</p>
+            </div>
+
+            <div class="bg-white p-3.5 rounded-2xl border border-slate-200/80 card-shadow flex justify-between items-center">
+                <div>
+                    <p class="text-[11px] text-slate-400 font-semibold">Today's Active Day</p>
+                    <p class="text-sm font-extrabold text-brand-700" id="currentActiveDayText">Day 1</p>
+                </div>
+                <div class="text-right">
+                    <p class="text-[11px] text-slate-400 font-semibold">Today's Buy Tasks Completed</p>
+                    <p class="text-sm font-extrabold text-slate-800"><span id="todayTaskCount">0</span> / <span id="todayTaskTarget">15</span></p>
+                </div>
+            </div>
+
+            <div id="rewardGridContainer" class="grid grid-cols-2 gap-3"></div>
+
+            <div class="bg-white p-4 rounded-2xl border border-slate-200/80 card-shadow space-y-2 text-center">
+                <button id="dailyClaimRewardBtn" onclick="claimDailyReward()" class="w-full py-3 bg-brand-700 hover:bg-brand-800 text-white font-bold text-xs rounded-xl shadow-md transition-all">
+                    Claim Today's Reward
+                </button>
+                <p class="text-[10px] text-slate-400">Complete the required tasks for today in the Buy tab to enable reward claiming.</p>
+            </div>
+        </section>
+
+        <!-- ================= FULL PAGE VIEW: PURCHASE RECORDS ================= -->
+        <section id="viewPurchaseRecords" class="hidden space-y-4">
+            <div class="grid grid-cols-3 gap-1 bg-slate-200 p-1 rounded-xl text-xs font-semibold">
+                <button onclick="switchPurchaseTab('Processing')" id="purTabProcessing" class="py-2 bg-white text-slate-800 rounded-lg shadow-sm font-bold">Processing</button>
+                <button onclick="switchPurchaseTab('Success')" id="purTabSuccess" class="py-2 text-slate-600 rounded-lg">Success</button>
+                <button onclick="switchPurchaseTab('Fail')" id="purTabFail" class="py-2 text-slate-600 rounded-lg">Fail</button>
+            </div>
+            <div id="purchaseRecordsListContainer" class="space-y-2"></div>
+        </section>
+
+        <!-- ================= FULL PAGE VIEW: COLLECTION RECORDS ================= -->
+        <section id="viewCollectionRecords" class="hidden space-y-4">
+            <div class="grid grid-cols-3 gap-1 bg-slate-200 p-1 rounded-xl text-xs font-semibold">
+                <button onclick="switchCollectionTab('Processing')" id="colTabProcessing" class="py-2 bg-white text-slate-800 rounded-lg shadow-sm font-bold">Processing</button>
+                <button onclick="switchCollectionTab('Success')" id="colTabSuccess" class="py-2 text-slate-600 rounded-lg">Success</button>
+                <button onclick="switchCollectionTab('Fail')" id="colTabFail" class="py-2 text-slate-600 rounded-lg">Fail</button>
+            </div>
+            <div id="collectionRecordsListContainer" class="space-y-2"></div>
+        </section>
+
+        <!-- ================= FULL PAGE VIEW: BALANCE DETAILS ================= -->
+        <section id="viewBalanceDetails" class="hidden space-y-3">
+            <div id="balanceHistoryFullListContainer" class="space-y-2"></div>
+        </section>
+
+        <!-- ================= FULL PAGE VIEW: TODAY'S TRANSACTIONS ================= -->
+        <section id="viewTodayRecords" class="hidden space-y-3">
+            <div id="todayRecordsFullListContainer" class="space-y-2"></div>
+        </section>
+
+        <!-- ================= TEAM MANAGEMENT VIEW ================= -->
+        <section id="viewTeamManagement" class="hidden space-y-4">
+            <div class="bg-brand-700 text-white p-4 rounded-2xl space-y-2 card-shadow">
+                <h3 class="text-xs font-bold tracking-wider opacity-90">Yesterday</h3>
+                <div class="grid grid-cols-3 gap-2 text-center pt-1">
+                    <div>
+                        <p class="text-[10px] opacity-80">Top-up Rebate</p>
+                        <p class="text-sm font-extrabold mt-0.5">0.00</p>
+                    </div>
+                    <div>
+                        <p class="text-[10px] opacity-80">Purchase Rebate</p>
+                        <p class="text-sm font-extrabold mt-0.5">0.00</p>
+                    </div>
+                    <div>
+                        <p class="text-[10px] opacity-80">Team members</p>
+                        <p class="text-sm font-extrabold mt-0.5">0</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-white p-4 rounded-2xl border border-slate-200/80 space-y-2 card-shadow">
+                <h3 class="text-xs font-bold text-slate-800">Today</h3>
+                <div class="grid grid-cols-3 gap-2 text-center pt-1">
+                    <div>
+                        <p class="text-[10px] text-slate-400">Top-up Rebate</p>
+                        <p class="text-sm font-bold text-slate-800 mt-0.5">0.00</p>
+                    </div>
+                    <div>
+                        <p class="text-[10px] text-slate-400">Purchase Rebate</p>
+                        <p class="text-sm font-bold text-slate-800 mt-0.5">0.00</p>
+                    </div>
+                    <div>
+                        <p class="text-[10px] text-slate-400">Team Additions</p>
+                        <p class="text-sm font-bold text-slate-800 mt-0.5">0</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-white p-4 rounded-2xl border border-slate-200/80 space-y-2 card-shadow">
+                <h3 class="text-xs font-bold text-slate-800">Invite Link</h3>
+                <div class="flex items-center gap-2 bg-slate-50 p-2.5 rounded-xl border border-slate-200">
+                    <input id="inviteLinkInput" type="text" readonly value="https://usdt-bep20.platform/register?inviteCode=" class="bg-transparent text-xs text-slate-600 flex-1 outline-none font-mono truncate">
+                    <button onclick="copyText(document.getElementById('inviteLinkInput').value, 'Invite Link Copied!')" class="p-1.5 bg-white border border-slate-200 rounded-lg text-slate-700 hover:bg-slate-100">
+                        <i data-lucide="copy" class="w-4 h-4"></i>
+                    </button>
+                </div>
+            </div>
+
+            <div class="bg-white rounded-2xl border border-slate-200/80 overflow-hidden card-shadow">
+                <div class="p-4 border-b border-slate-100 flex justify-between items-center">
+                    <h3 class="text-xs font-bold text-slate-800">Purchase Reward</h3>
+                    <button onclick="openTeamDetailsView()" class="text-xs font-bold text-brand-700 bg-brand-50 px-2.5 py-1 rounded-lg border border-brand-100">Details &gt;</button>
+                </div>
+
+                <div class="bg-amber-500 text-white grid grid-cols-4 px-4 py-2.5 text-[11px] font-bold text-center">
+                    <span>Level</span>
+                    <span>Rate %</span>
+                    <span>Scale</span>
+                    <span>Estimate</span>
+                </div>
+
+                <div class="divide-y divide-slate-100 text-xs text-center font-medium">
+                    <div class="grid grid-cols-4 px-4 py-3 text-slate-700">
+                        <span>Level 1</span>
+                        <span class="text-amber-600 font-bold">0.4%</span>
+                        <span>0</span>
+                        <span class="font-bold">0.00 USDT</span>
+                    </div>
+                    <div class="grid grid-cols-4 px-4 py-3 text-slate-700">
+                        <span>Level 2</span>
+                        <span class="text-amber-600 font-bold">0.3%</span>
+                        <span>0</span>
+                        <span class="font-bold">0.00 USDT</span>
+                    </div>
+                    <div class="grid grid-cols-4 px-4 py-3 text-slate-700">
+                        <span>Level 3</span>
+                        <span class="text-amber-600 font-bold">0.2%</span>
+                        <span>0</span>
+                        <span class="font-bold">0.00 USDT</span>
+                    </div>
+                    <div class="grid grid-cols-4 px-4 py-3 text-slate-700">
+                        <span>Level 4</span>
+                        <span class="text-amber-600 font-bold">0.1%</span>
+                        <span>0</span>
+                        <span class="font-bold">0.00 USDT</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ================= FULL PAGE VIEW: TEAM DETAILS ================= -->
+        <section id="viewTeamDetails" class="hidden space-y-3">
+            <div id="teamDetailsFullListContainer" class="space-y-3"></div>
+        </section>
+
+    </main>
+
+    <!-- ================= BOTTOM NAVIGATION TABS ================= -->
+    <nav id="bottomNav" class="fixed bottom-0 left-0 right-0 max-w-md mx-auto bg-white border-t border-slate-200/80 z-40">
+        <div class="flex justify-around items-center py-2 relative">
+            <button onclick="switchTab('Home')" id="navHome" class="flex flex-col items-center gap-1 text-brand-600 transition-all">
+                <i data-lucide="home" class="w-5 h-5"></i>
+                <span class="text-[10px] font-semibold">Home</span>
+            </button>
+
+            <button onclick="switchTab('Buy')" id="navBuy" class="flex flex-col items-center gap-1 text-slate-400 hover:text-slate-700 transition-all">
+                <i data-lucide="shopping-bag" class="w-5 h-5"></i>
+                <span class="text-[10px] font-semibold">Buy</span>
+            </button>
+
+            <div class="relative -top-5">
+                <button onclick="openGiftTaskModal()" class="w-14 h-14 bg-gradient-to-tr from-emerald-600 to-brand-500 rounded-full border-4 border-white flex items-center justify-center text-amber-300 gift-glow shadow-lg active:scale-95 transition-all">
+                    <i data-lucide="gift" class="w-7 h-7"></i>
+                </button>
+            </div>
+
+            <button onclick="switchTab('Sell')" id="navSell" class="flex flex-col items-center gap-1 text-slate-400 hover:text-slate-700 transition-all">
+                <i data-lucide="wallet" class="w-5 h-5"></i>
+                <span class="text-[10px] font-semibold">Sell</span>
+            </button>
+
+            <button onclick="switchTab('Mine')" id="navMine" class="flex flex-col items-center gap-1 text-slate-400 hover:text-slate-700 transition-all">
+                <i data-lucide="user" class="w-5 h-5"></i>
+                <span class="text-[10px] font-semibold">Mine</span>
+            </button>
+        </div>
+    </nav>
+
+    <!-- ================= AUTH MODAL (LOGIN & REGISTER) ================= -->
+    <div id="authModal" class="fixed inset-0 bg-slate-100 z-50 flex items-center justify-center p-4 overflow-y-auto">
+        <div class="bg-white w-full max-w-md min-h-screen sm:min-h-0 sm:rounded-3xl p-6 space-y-5 shadow-2xl border border-slate-100 relative flex flex-col justify-center">
+            
+            <!-- Auth Header -->
+            <div class="text-center space-y-1">
+                <div class="w-12 h-12 bg-brand-50 text-brand-600 rounded-2xl flex items-center justify-center mx-auto mb-2">
+                    <i data-lucide="shield-check" class="w-6 h-6"></i>
+                </div>
+                <h2 id="authModalTitle" class="text-xl font-black text-slate-800 tracking-tight">Login Account</h2>
+                <p id="authModalSubtitle" class="text-xs font-semibold text-slate-400">Enter your mobile number and password</p>
+            </div>
+
+            <!-- LOGIN FORM -->
+            <form id="loginForm" class="space-y-4">
+                <div class="space-y-1">
+                    <label class="text-[11px] font-bold text-slate-600 uppercase tracking-wider">Phone Number</label>
+                    <div class="flex items-center bg-slate-50 border border-slate-200 rounded-xl overflow-hidden focus-within:border-brand-500 transition-all">
+                        <span class="px-3 py-2.5 bg-slate-100 text-slate-600 font-bold text-xs border-r border-slate-200">+880</span>
+                        <input type="tel" id="loginPhone" placeholder="1XXXXXXXXX" maxlength="10" required class="w-full bg-transparent p-2.5 text-xs text-slate-800 outline-none font-bold">
+                    </div>
+                </div>
+
+                <div class="space-y-1">
+                    <label class="text-[11px] font-bold text-slate-600 uppercase tracking-wider">Password</label>
+                    <input type="password" id="loginPassword" placeholder="••••••••" required class="w-full bg-slate-50 border border-slate-200 rounded-xl p-2.5 text-xs text-slate-800 outline-none focus:border-brand-500 font-bold">
+                </div>
+
+                <button type="submit" class="w-full py-3.5 bg-brand-600 hover:bg-brand-700 text-white font-bold text-xs rounded-xl shadow-md transition-all active:scale-95 uppercase tracking-wider">
+                    Log In
+                </button>
+            </form>
+
+            <!-- REGISTER FORM -->
+            <form id="registerForm" class="hidden space-y-3.5">
+                <div class="space-y-1">
+                    <label class="text-[11px] font-bold text-slate-600 uppercase tracking-wider">Phone Number</label>
+                    <div class="flex items-center bg-slate-50 border border-slate-200 rounded-xl overflow-hidden focus-within:border-brand-500 transition-all">
+                        <span class="px-3 py-2.5 bg-slate-100 text-slate-600 font-bold text-xs border-r border-slate-200">+880</span>
+                        <input type="tel" id="regPhone" placeholder="1XXXXXXXXX" maxlength="10" required class="w-full bg-transparent p-2.5 text-xs text-slate-800 outline-none font-bold">
+                    </div>
+                </div>
+
+                <div class="space-y-1">
+                    <label class="text-[11px] font-bold text-slate-600 uppercase tracking-wider">Password</label>
+                    <input type="password" id="regPassword" placeholder="Minimum 6 characters" minlength="6" required class="w-full bg-slate-50 border border-slate-200 rounded-xl p-2.5 text-xs text-slate-800 outline-none focus:border-brand-500 font-bold">
+                </div>
+
+                <div class="space-y-1">
+                    <label class="text-[11px] font-bold text-slate-600 uppercase tracking-wider">Confirm Password</label>
+                    <input type="password" id="regConfirmPassword" placeholder="Re-enter password" minlength="6" required class="w-full bg-slate-50 border border-slate-200 rounded-xl p-2.5 text-xs text-slate-800 outline-none focus:border-brand-500 font-bold">
+                    <p id="passwordMatchMessage" class="text-[10px] font-bold hidden"></p>
+                </div>
+
+                <div class="space-y-1">
+                    <div class="flex justify-between items-center">
+                        <label class="text-[11px] font-bold text-slate-600 uppercase tracking-wider">Referral Code</label>
+                        <span class="text-[9px] font-black text-rose-500 uppercase tracking-wider">* Mandatory</span>
+                    </div>
+                    <input type="text" id="regReferralCode" placeholder="Enter valid referral code" required class="w-full bg-slate-50 border border-slate-200 rounded-xl p-2.5 text-xs text-slate-800 outline-none focus:border-brand-500 font-bold uppercase">
+                </div>
+
+                <button type="submit" class="w-full py-3.5 bg-brand-600 hover:bg-brand-700 text-white font-bold text-xs rounded-xl shadow-md transition-all active:scale-95 uppercase tracking-wider">
+                    Complete Registration
+                </button>
+            </form>
+
+            <!-- Toggle Auth View -->
+            <div class="text-center pt-2 border-t border-slate-100">
+                <p id="authToggleText" class="text-xs font-semibold text-slate-500">
+                    Don't have an account? 
+                    <button type="button" onclick="toggleAuthMode('register')" class="text-brand-700 font-bold hover:underline">Register Now</button>
+                </p>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- ================= OTHER MODALS ================= -->
+
+    <!-- ORDER CLAIM SHEET MODAL -->
+    <div id="orderClaimModal" class="hidden fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-end sm:items-center justify-center">
+        <div class="bg-white w-full max-w-md rounded-t-3xl sm:rounded-2xl p-5 space-y-4 shadow-2xl border-t border-slate-200">
+            <div class="flex justify-between items-center border-b border-slate-100 pb-3">
+                <h3 class="text-base font-bold text-slate-800">Order Claim Sheet (BEP-20)</h3>
+                <button onclick="closeOrderClaimModal()" class="text-slate-400 hover:text-slate-600">
+                    <i data-lucide="x" class="w-5 h-5"></i>
+                </button>
+            </div>
+
+            <div class="bg-slate-50 p-3 rounded-xl border border-slate-200 flex justify-between items-center text-xs">
+                <div>
+                    <p class="text-slate-500">Order Amount</p>
+                    <p class="text-sm font-bold text-slate-900" id="claimModalAmount">10.00 USDT</p>
+                </div>
+                <div class="text-right">
+                    <p class="text-slate-500">Reward Rate (3%)</p>
+                    <p class="text-sm font-bold text-brand-700" id="claimModalReward">+0.30 USDT</p>
+                </div>
+            </div>
+
+            <div class="bg-amber-50 border border-amber-200 p-3 rounded-xl text-center space-y-1">
+                <p class="text-[11px] text-amber-800 font-semibold">Time Remaining to Complete Payment</p>
+                <div class="text-2xl font-mono font-black text-amber-600" id="claimTimerDisplay">09:00</div>
+            </div>
+
+            <div class="space-y-1">
+                <label class="text-xs font-semibold text-slate-600">Binance USDT (BEP-20) Payment Address</label>
+                <div class="flex items-center gap-2 bg-slate-100 p-2.5 rounded-xl border border-slate-200">
+                    <input type="text" readonly value="0x71C7656EC7ab88b098defB751B7401B5f6d8976F" class="bg-transparent font-mono text-xs text-slate-800 flex-1 outline-none break-all">
+                    <button onclick="copyText('0x71C7656EC7ab88b098defB751B7401B5f6d8976F', 'BEP-20 Address Copied!')" class="p-1.5 bg-white text-brand-700 rounded-lg hover:bg-slate-200 border border-slate-200">
+                        <i data-lucide="copy" class="w-4 h-4"></i>
+                    </button>
+                </div>
+            </div>
+
+            <div class="space-y-1">
+                <label class="text-xs font-semibold text-slate-600">Transaction Hash / TxID</label>
+                <input type="text" id="txIdInput" placeholder="Paste BEP-20 transaction hash here" class="w-full bg-slate-50 border border-slate-200 rounded-xl p-2.5 text-xs text-slate-800 outline-none focus:border-brand-500">
+            </div>
+
+            <button onclick="submitOrderTxID()" class="w-full py-3 bg-brand-700 hover:bg-brand-800 text-white font-bold text-xs rounded-xl shadow-md transition-all">
+                Submit Payment TxID
+            </button>
+        </div>
+    </div>
+
+    <!-- ADD WALLET MODAL -->
+    <div id="addWalletModal" class="hidden fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+        <div class="bg-white w-full max-w-md rounded-2xl p-5 space-y-4 shadow-2xl">
+            <div class="flex justify-between items-center border-b border-slate-100 pb-3">
+                <h3 class="text-base font-bold text-slate-800">Add BEP-20 Wallet Address</h3>
+                <button onclick="closeAddWalletModal()" class="text-slate-400 hover:text-slate-600">
+                    <i data-lucide="x" class="w-5 h-5"></i>
+                </button>
+            </div>
+
+            <div class="space-y-2">
+                <label class="text-xs font-semibold text-slate-600">Binance USDT BEP-20 Address</label>
+                <input type="text" id="newWalletAddressInput" placeholder="0x..." class="w-full bg-slate-50 border border-slate-200 rounded-xl p-2.5 text-xs text-slate-800 outline-none focus:border-brand-500 font-mono">
+            </div>
+
+            <button onclick="saveNewWallet()" class="w-full py-3 bg-brand-700 hover:bg-brand-800 text-white font-bold text-xs rounded-xl transition-all shadow-md">
+                Save Wallet
+            </button>
+        </div>
+    </div>
+
+    <!-- ================= FIREBASE REALTIME DATABASE & AUTH LOGIC ================= -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+        import { 
+            getAuth, 
+            signInWithEmailAndPassword,
+            createUserWithEmailAndPassword,
+            onAuthStateChanged, 
+            signOut 
+        } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+        import { 
+            getDatabase, 
+            ref, 
+            get, 
+            set, 
+            update, 
+            onValue 
+        } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
+
+        // Realtime Database Configuration
+        const firebaseConfig = {
+          apiKey: "AIzaSyAwO8EvSCzs9sFXRDqFOEj7ARA854AyMzE",
+          authDomain: "free-per.firebaseapp.com",
+          databaseURL: "https://free-per-default-rtdb.firebaseio.com",
+          projectId: "free-per",
+          storageBucket: "free-per.firebasestorage.app",
+          messagingSenderId: "751281364166",
+          appId: "1:751281364166:web:769712865172d55e80cbc7",
+          measurementId: "G-LBZK01EKCB"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getDatabase(app);
+
+        window.currentUser = null;
+
+        window.appState = {
+            balance: 0.00,
+            hasClaimedNewUserReward: false,
+            currentView: 'Home',
+            wallets: [],
+            activePurchaseTab: 'Processing',
+            activeCollectionTab: 'Processing',
+            packages: [
+                { id: 1, amount: 10, rate: '3.00%', reward: 0.30, range: '10-50' },
+                { id: 2, amount: 50, rate: '3.00%', reward: 1.50, range: '10-50' },
+                { id: 3, amount: 100, rate: '3.00%', reward: 3.00, range: '50-200' },
+                { id: 4, amount: 350, rate: '3.00%', reward: 10.50, range: '200-1000' }
+            ],
+            currentDay: 1,
+            todayTasksCompleted: 0,
+            sevenDaysTasks: [
+                { day: 1, target: 15, reward: 0.50, status: 'pending' },
+                { day: 2, target: 20, reward: 0.50, status: 'pending' },
+                { day: 3, target: 25, reward: 0.80, status: 'pending' },
+                { day: 4, target: 30, reward: 0.80, status: 'pending' },
+                { day: 5, target: 35, reward: 0.80, status: 'pending' },
+                { day: 6, target: 40, reward: 0.80, status: 'pending' },
+                { day: 7, target: 45, reward: 0.80, status: 'pending' }
+            ],
+            purchaseRecords: [],
+            collectionRecords: [],
+            balanceHistory: [],
+            teamMembers: [],
+            buyTimerInterval: null,
+            claimTimerSeconds: 540,
+            currentClaimPackage: null
+        };
+
+        // Auth Listener
+        onAuthStateChanged(auth, async (user) => {
+            if (user) {
+                window.currentUser = user;
+                document.getElementById('authModal').classList.add('hidden');
+                
+                const shortId = user.uid.substring(0, 6);
+                document.getElementById('userIdText').innerText = shortId;
+                document.getElementById('inviteLinkInput').value = `https://usdt-bep20.platform/register?inviteCode=${shortId}`;
+                
+                const userRef = ref(db, 'users/' + user.uid);
+                onValue(userRef, (snapshot) => {
+                    const data = snapshot.val();
+                    if (data) {
+                        window.appState.balance = data.balance || 0;
+                        window.appState.hasClaimedNewUserReward = data.hasClaimedNewUserReward || false;
+                        window.appState.currentDay = data.currentDay || 1;
+                        window.appState.todayTasksCompleted = data.todayTasksCompleted || 0;
+                        window.appState.wallets = data.wallets || [];
+                        window.appState.sevenDaysTasks = data.sevenDaysTasks || window.appState.sevenDaysTasks;
+                        window.appState.purchaseRecords = data.purchaseRecords || [];
+                        window.appState.collectionRecords = data.collectionRecords || [];
+                        window.appState.balanceHistory = data.balanceHistory || [];
+                        window.appState.teamMembers = data.teamMembers || [];
+
+                        document.getElementById('userPhoneDisplay').innerText = data.phone || user.phoneNumber || "+880 1XXXXXXXXX";
+
+                        if(window.appState.hasClaimedNewUserReward) {
+                            const btn = document.getElementById('claimRewardBtn');
+                            if(btn) {
+                                btn.innerText = "CLAIMED";
+                                btn.disabled = true;
+                                btn.className = "mt-2 px-3 py-1.5 bg-slate-300 text-slate-600 text-xs font-bold rounded-lg cursor-not-allowed";
+                            }
+                        }
+
+                        updateUI();
+                        renderWallets();
+                        renderRewardTaskGrid();
+                    }
+                });
+            } else {
+                window.currentUser = null;
+                document.getElementById('authModal').classList.remove('hidden');
+            }
+        });
+
+        // Toggle Auth View
+        window.toggleAuthMode = function(mode) {
+            const loginForm = document.getElementById('loginForm');
+            const registerForm = document.getElementById('registerForm');
+            const title = document.getElementById('authModalTitle');
+            const subtitle = document.getElementById('authModalSubtitle');
+            const toggleText = document.getElementById('authToggleText');
+
+            if (mode === 'register') {
+                loginForm.classList.add('hidden');
+                registerForm.classList.remove('hidden');
+                title.innerText = "Register Account";
+                subtitle.innerText = "Create a new account with mobile number & referral";
+                toggleText.innerHTML = `Already have an account? <button type="button" onclick="toggleAuthMode('login')" class="text-brand-700 font-bold hover:underline">Log In</button>`;
+            } else {
+                registerForm.classList.add('hidden');
+                loginForm.classList.remove('hidden');
+                title.innerText = "Login Account";
+                subtitle.innerText = "Enter your mobile number and password";
+                toggleText.innerHTML = `Don't have an account? <button type="button" onclick="toggleAuthMode('register')" class="text-brand-700 font-bold hover:underline">Register Now</button>`;
+            }
+        };
+
+        // Realtime Password Match Validation
+        const regPassword = document.getElementById('regPassword');
+        const regConfirmPassword = document.getElementById('regConfirmPassword');
+        const passwordMatchMessage = document.getElementById('passwordMatchMessage');
+
+        function checkPasswordMatch() {
+            const pwd = regPassword.value;
+            const confirmPwd = regConfirmPassword.value;
+
+            if (!confirmPwd) {
+                passwordMatchMessage.classList.add('hidden');
+                return;
+            }
+
+            passwordMatchMessage.classList.remove('hidden');
+            if (pwd === confirmPwd) {
+                passwordMatchMessage.innerText = "Passwords match ✓";
+                passwordMatchMessage.className = "text-[10px] font-bold text-emerald-600 mt-1";
+            } else {
+                passwordMatchMessage.innerText = "Passwords do not match ✕";
+                passwordMatchMessage.className = "text-[10px] font-bold text-rose-500 mt-1";
+            }
+        }
+
+        regPassword.addEventListener('input', checkPasswordMatch);
+        regConfirmPassword.addEventListener('input', checkPasswordMatch);
+
+        // Login Submit
+        document.getElementById('loginForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const phone = document.getElementById('loginPhone').value.trim();
+            const password = document.getElementById('loginPassword').value.trim();
+
+            if(!phone || !password) {
+                alert("Please complete all fields!");
+                return;
+            }
+
+            const email = `user_${phone}@usdtplatform.app`;
+            try {
+                await signInWithEmailAndPassword(auth, email, password);
+            } catch (err) {
+                alert("Login failed! Invalid phone number or password.");
+            }
+        });
+
+        // Register Submit
+        document.getElementById('registerForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const phone = document.getElementById('regPhone').value.trim();
+            const password = document.getElementById('regPassword').value.trim();
+            const confirmPassword = document.getElementById('regConfirmPassword').value.trim();
+            const refCode = document.getElementById('regReferralCode').value.trim();
+
+            if(!phone || !password || !confirmPassword || !refCode) {
+                alert("Referral code and all fields are mandatory!");
+                return;
+            }
+
+            if (password !== confirmPassword) {
+                alert("Passwords do not match!");
+                return;
+            }
+
+            // Verify Referral Code in Realtime DB
+            const refSnapshot = await get(ref(db, 'referralCodes/' + refCode));
+            if(!refSnapshot.exists() && refCode !== '3yZAYr' && refCode !== 'ADMIN') {
+                alert("Invalid Referral Code! Account creation allowed only with a valid referral code.");
+                return;
+            }
+
+            try {
+                const email = `user_${phone}@usdtplatform.app`;
+                const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+
+                const userId = userCredential.user.uid;
+                const userRef = ref(db, 'users/' + userId);
+
+                const initialData = {
+                    phone: "+880" + phone,
+                    balance: 0.00,
+                    hasClaimedNewUserReward: false,
+                    currentDay: 1,
+                    todayTasksCompleted: 0,
+                    referredBy: refCode,
+                    wallets: [],
+                    sevenDaysTasks: window.appState.sevenDaysTasks,
+                    purchaseRecords: [],
+                    collectionRecords: [],
+                    balanceHistory: [],
+                    teamMembers: [],
+                    createdAt: new Date().toISOString()
+                };
+
+                await set(userRef, initialData);
+                await set(ref(db, 'referralCodes/' + userId.substring(0,6)), userId);
+
+                alert("Account created successfully!");
+            } catch (err) {
+                console.error("Registration Error:", err);
+                alert("Registration failed: " + err.message);
+            }
+        });
+
+        // Firebase Sync Helper
+        async function saveStateToFirebase(dataObj) {
+            if(!window.currentUser) return;
+            const userRef = ref(db, 'users/' + window.currentUser.uid);
+            await update(userRef, dataObj);
+        }
+
+        window.addEventListener('DOMContentLoaded', () => {
+            lucide.createIcons();
+            renderPackages('all');
+        });
+
+        window.updateUI = function() {
+            document.getElementById('mineBalance').innerText = window.appState.balance.toFixed(2);
+            document.getElementById('walletCountText').innerText = `${window.appState.wallets.length} connected`;
+            
+            const activeCount = window.appState.wallets.filter(w => w.isCollectionActive).length;
+            const badge = document.getElementById('collectionStatusBadge');
+            badge.innerText = `${activeCount} online`;
+            badge.className = activeCount > 0 
+                ? "px-2 py-0.5 bg-emerald-100 text-emerald-700 border border-emerald-200 rounded text-[10px] font-bold"
+                : "px-2 py-0.5 bg-rose-100 text-rose-700 border border-rose-200 rounded text-[10px] font-bold";
+
+            const currentDayObj = window.appState.sevenDaysTasks[window.appState.currentDay - 1];
+            if(currentDayObj) {
+                document.getElementById('currentActiveDayText').innerText = `Day ${window.appState.currentDay}`;
+                document.getElementById('todayTaskCount').innerText = window.appState.todayTasksCompleted;
+                document.getElementById('todayTaskTarget').innerText = currentDayObj.target;
+            }
+        };
+
+        window.openGiftTaskModal = function() {
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
+            hideAllFullViews();
+            document.getElementById('viewRewardTasks').classList.remove('hidden');
+            document.getElementById('headerBackBtn').classList.remove('hidden');
+            document.getElementById('headerTitle').innerText = 'Daily Reward Tasks';
+            renderRewardTaskGrid();
+        };
+
+        window.renderRewardTaskGrid = function() {
+            const container = document.getElementById('rewardGridContainer');
+            if(!container) return;
+            container.innerHTML = '';
+
+            window.appState.sevenDaysTasks.forEach(item => {
+                const isCurrent = item.day === window.appState.currentDay;
+                let cardBg = "bg-white border-slate-200/80";
+                let badgeHtml = '';
+
+                if (item.status === 'claimed') {
+                    cardBg = "bg-emerald-50 border-emerald-300";
+                    badgeHtml = `<span class="w-6 h-6 rounded-full bg-emerald-500 text-white flex items-center justify-center text-xs font-black shadow-sm">✓</span>`;
+                } else if (item.status === 'failed') {
+                    cardBg = "bg-rose-50 border-rose-300";
+                    badgeHtml = `<span class="w-6 h-6 rounded-full bg-rose-500 text-white flex items-center justify-center text-xs font-black shadow-sm">✕</span>`;
+                } else if (isCurrent) {
+                    cardBg = "bg-amber-50/80 border-amber-300 ring-2 ring-amber-400/50";
+                    badgeHtml = `<span class="px-2 py-0.5 bg-amber-400 text-slate-900 text-[9px] font-extrabold rounded-full">TODAY</span>`;
+                } else {
+                    badgeHtml = `<span class="text-[10px] text-slate-400 font-bold">Day ${item.day}</span>`;
+                }
+
+                const card = document.createElement('div');
+                card.className = `p-3.5 rounded-2xl border ${cardBg} card-shadow space-y-2 relative overflow-hidden`;
+                card.innerHTML = `
+                    <div class="flex justify-between items-center">
+                        <span class="text-xs font-bold text-slate-800">Day ${item.day}</span>
+                        ${badgeHtml}
+                    </div>
+                    <div>
+                        <p class="text-base font-black text-brand-700">+${item.reward.toFixed(2)} USDT</p>
+                        <p class="text-[10px] font-semibold text-slate-500">Target: ${item.target} Tasks</p>
+                    </div>
+                    ${isCurrent ? `
+                        <div class="w-full bg-slate-200 h-1.5 rounded-full overflow-hidden mt-1">
+                            <div class="bg-brand-600 h-full rounded-full transition-all" style="width: ${Math.min(100, (window.appState.todayTasksCompleted / item.target) * 100)}%"></div>
+                        </div>
+                        <p class="text-[9px] text-slate-500 font-bold text-right">${window.appState.todayTasksCompleted}/${item.target}</p>
+                    ` : ''}
+                `;
+                container.appendChild(card);
+            });
+
+            const currentObj = window.appState.sevenDaysTasks[window.appState.currentDay - 1];
+            const claimBtn = document.getElementById('dailyClaimRewardBtn');
+
+            if (currentObj && currentObj.status === 'claimed') {
+                claimBtn.innerText = "Today's Reward Claimed ✓";
+                claimBtn.disabled = true;
+                claimBtn.className = "w-full py-3 bg-slate-300 text-slate-600 font-bold text-xs rounded-xl cursor-not-allowed";
+            } else if (currentObj && window.appState.todayTasksCompleted >= currentObj.target) {
+                claimBtn.innerText = `Claim +${currentObj.reward.toFixed(2)} USDT Reward`;
+                claimBtn.disabled = false;
+                claimBtn.className = "w-full py-3 bg-brand-600 hover:bg-brand-700 text-white font-bold text-xs rounded-xl shadow-md transition-all animate-pulse";
+            } else {
+                claimBtn.innerText = "Complete Today's Tasks First";
+                claimBtn.disabled = true;
+                claimBtn.className = "w-full py-3 bg-slate-200 text-slate-500 font-bold text-xs rounded-xl cursor-not-allowed";
+            }
+
+            lucide.createIcons();
+        };
+
+        window.claimDailyReward = async function() {
+            const currentObj = window.appState.sevenDaysTasks[window.appState.currentDay - 1];
+            if (!currentObj) return;
+
+            if (window.appState.todayTasksCompleted < currentObj.target) {
+                alert(`You need to complete ${currentObj.target} tasks today to claim this reward!`);
+                return;
+            }
+
+            if (currentObj.status === 'claimed') {
+                alert("You have already claimed today's reward!");
+                return;
+            }
+
+            const newBalance = window.appState.balance + currentObj.reward;
+            currentObj.status = 'claimed';
+
+            let nextDay = window.appState.currentDay;
+            let resetCompleted = window.appState.todayTasksCompleted;
+
+            if (window.appState.currentDay < 7) {
+                nextDay++;
+                resetCompleted = 0;
+            }
+
+            const newHistoryItem = {
+                title: `Day ${currentObj.day} Task Reward`,
+                amount: `+${currentObj.reward.toFixed(2)} USDT`,
+                status: 'Success',
+                time: 'Just now'
+            };
+
+            const updatedHistory = [newHistoryItem, ...window.appState.balanceHistory];
+
+            await saveStateToFirebase({
+                balance: newBalance,
+                currentDay: nextDay,
+                todayTasksCompleted: resetCompleted,
+                sevenDaysTasks: window.appState.sevenDaysTasks,
+                balanceHistory: updatedHistory
+            });
+
+            alert(`Success! +${currentObj.reward.toFixed(2)} USDT added to your balance.`);
+        };
+
+        window.renderWallets = function() {
+            const container = document.getElementById('walletsContainer');
+            if(!container) return;
+            container.innerHTML = '';
+
+            window.appState.wallets.forEach((wallet, index) => {
+                const card = document.createElement('div');
+                card.className = "bg-white p-4 rounded-2xl border border-slate-200/80 space-y-3 card-shadow";
+                card.innerHTML = `
+                    <div class="flex justify-between items-start">
+                        <div class="flex items-center gap-2">
+                            <div class="w-9 h-9 bg-amber-400 rounded-lg flex items-center justify-center p-1 font-bold text-xs shadow-sm">
+                                <svg viewBox="0 0 24 24" class="w-6 h-6 fill-slate-950"><path d="M12 0L2.5 5.5v13L12 24l9.5-5.5v-13L12 0zm5.1 14.8l-5.1 3-5.1-3V9.2l5.1-3 5.1 3v5.6z"/></svg>
+                            </div>
+                            <div>
+                                <p class="text-xs font-bold text-slate-800">Binance USDT BEP-20 Wallet #${index + 1}</p>
+                                <p class="text-[10px] font-mono text-slate-500 break-all">${wallet.address}</p>
+                            </div>
+                        </div>
+                        <span class="px-2 py-0.5 ${wallet.isCollectionActive ? 'bg-emerald-50 text-emerald-600 border-emerald-200' : 'bg-rose-50 text-rose-600 border-rose-200'} border text-[10px] font-bold rounded-full">
+                            ${wallet.isCollectionActive ? 'Active' : 'Paused'}
+                        </span>
+                    </div>
+
+                    <div class="pt-2 border-t border-slate-100 flex justify-between items-center">
+                        <div>
+                            <p class="text-[10px] text-slate-400">Available Balance</p>
+                            <p class="text-lg font-black text-slate-800">${window.appState.balance.toFixed(2)} USDT</p>
+                        </div>
+                        <button onclick="toggleWalletCollection(${wallet.id})" class="px-4 py-2 ${wallet.isCollectionActive ? 'bg-emerald-600 hover:bg-emerald-700' : 'bg-slate-600 hover:bg-slate-700'} text-white font-bold text-xs rounded-xl shadow-sm transition-all">
+                            ${wallet.isCollectionActive ? 'Collection Started' : 'Collection Off'}
+                        </button>
+                    </div>
+                `;
+                container.appendChild(card);
+            });
+            lucide.createIcons();
+        };
+
+        window.toggleWalletCollection = async function(id) {
+            const updatedWallets = window.appState.wallets.map(w => {
+                if (w.id === id) {
+                    return { ...w, isCollectionActive: !w.isCollectionActive };
+                }
+                return w;
+            });
+            await saveStateToFirebase({ wallets: updatedWallets });
+        };
+
+        window.saveNewWallet = async function() {
+            const addrInput = document.getElementById('newWalletAddressInput').value.trim();
+            if(!addrInput || !addrInput.toLowerCase().startsWith('0x') || addrInput.length < 10) {
+                alert("Please enter a valid BEP-20 address starting with 0x!");
+                return;
+            }
+
+            const newWallet = {
+                id: Date.now(),
+                address: addrInput,
+                isCollectionActive: true
+            };
+
+            const updatedWallets = [...window.appState.wallets, newWallet];
+            await saveStateToFirebase({ wallets: updatedWallets });
+
+            document.getElementById('newWalletAddressInput').value = '';
+            closeAddWalletModal();
+            alert("New BEP-20 Wallet Address Added Successfully!");
+        };
+
+        window.submitOrderTxID = async function() {
+            const tx = document.getElementById('txIdInput').value;
+            if(!tx) {
+                alert("Please enter a valid TxID hash!");
+                return;
+            }
+
+            const newRecord = {
+                id: 'ORD-' + Math.floor(100000 + Math.random() * 900000),
+                type: 'Buy Task',
+                amount: window.appState.currentClaimPackage ? window.appState.currentClaimPackage.amount : 50.00,
+                status: 'Processing',
+                time: 'Just now',
+                txId: tx
+            };
+
+            const updatedPurchases = [newRecord, ...window.appState.purchaseRecords];
+            const updatedTaskCount = window.appState.todayTasksCompleted + 1;
+
+            await saveStateToFirebase({
+                purchaseRecords: updatedPurchases,
+                todayTasksCompleted: updatedTaskCount
+            });
+
+            alert("BEP-20 Payment submitted successfully!");
+            document.getElementById('txIdInput').value = '';
+            closeOrderClaimModal();
+        };
+
+        window.claimNewUserReward = async function() {
+            if(window.appState.hasClaimedNewUserReward) {
+                alert("You have already claimed your new user reward!");
+                return;
+            }
+
+            const newBalance = window.appState.balance + 1.00;
+            const newHistoryItem = { title: 'New User Bonus', amount: '+1.00 USDT', status: 'Success', time: 'Just now' };
+            const updatedHistory = [newHistoryItem, ...window.appState.balanceHistory];
+
+            await saveStateToFirebase({
+                balance: newBalance,
+                hasClaimedNewUserReward: true,
+                balanceHistory: updatedHistory
+            });
+
+            alert("1.00 USDT Added to your balance!");
+        };
+
+        window.logoutUser = function() {
+            signOut(auth).then(() => {
+                alert("Logged out successfully!");
+                location.reload();
+            });
+        };
+
+        window.switchTab = function(tabName) {
+            window.appState.currentView = tabName;
+            hideAllFullViews();
+
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
+            document.getElementById(`tab${tabName}`).classList.remove('hidden');
+
+            document.getElementById('headerTitle').innerText = tabName === 'Mine' ? 'Mine' : tabName;
+
+            ['Home', 'Buy', 'Sell', 'Mine'].forEach(t => {
+                const navBtn = document.getElementById(`nav${t}`);
+                if (navBtn) {
+                    navBtn.className = t === tabName ? "flex flex-col items-center gap-1 text-brand-600 transition-all" : "flex flex-col items-center gap-1 text-slate-400 hover:text-slate-700 transition-all";
+                }
+            });
+        };
+
+        window.hideAllFullViews = function() {
+            document.getElementById('viewRewardTasks').classList.add('hidden');
+            document.getElementById('viewTeamManagement').classList.add('hidden');
+            document.getElementById('viewPurchaseRecords').classList.add('hidden');
+            document.getElementById('viewCollectionRecords').classList.add('hidden');
+            document.getElementById('viewTeamDetails').classList.add('hidden');
+            document.getElementById('viewBalanceDetails').classList.add('hidden');
+            document.getElementById('viewTodayRecords').classList.add('hidden');
+            document.getElementById('headerBackBtn').classList.add('hidden');
+        };
+
+        window.goBack = function() {
+            hideAllFullViews();
+            switchTab(window.appState.currentView || 'Home');
+        };
+
+        window.openPurchaseRecordsView = function() {
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
+            hideAllFullViews();
+            document.getElementById('viewPurchaseRecords').classList.remove('hidden');
+            document.getElementById('headerBackBtn').classList.remove('hidden');
+            document.getElementById('headerTitle').innerText = 'Purchase Records';
+            renderPurchaseRecordsList();
+        };
+
+        window.openCollectionRecordsView = function() {
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
+            hideAllFullViews();
+            document.getElementById('viewCollectionRecords').classList.remove('hidden');
+            document.getElementById('headerBackBtn').classList.remove('hidden');
+            document.getElementById('headerTitle').innerText = 'Collection Records';
+            renderCollectionRecordsList();
+        };
+
+        window.openBalanceDetailsView = function() {
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
+            hideAllFullViews();
+            document.getElementById('viewBalanceDetails').classList.remove('hidden');
+            document.getElementById('headerBackBtn').classList.remove('hidden');
+            document.getElementById('headerTitle').innerText = 'Balance Details History';
+            renderBalanceDetailsFull();
+        };
+
+        window.openTodayRecordsView = function() {
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
+            hideAllFullViews();
+            document.getElementById('viewTodayRecords').classList.remove('hidden');
+            document.getElementById('headerBackBtn').classList.remove('hidden');
+            document.getElementById('headerTitle').innerText = "Today's Transactions & Failures";
+            renderTodayRecordsFull();
+        };
+
+        window.openTeamManagement = function() {
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
+            hideAllFullViews();
+            document.getElementById('viewTeamManagement').classList.remove('hidden');
+            document.getElementById('headerBackBtn').classList.remove('hidden');
+            document.getElementById('headerTitle').innerText = 'Team Management';
+        };
+
+        window.openTeamDetailsView = function() {
+            hideAllFullViews();
+            document.getElementById('viewTeamDetails').classList.remove('hidden');
+            document.getElementById('headerBackBtn').classList.remove('hidden');
+            document.getElementById('headerTitle').innerText = 'Team & Referral Details';
+            renderTeamDetailsFull();
+        };
+
+        window.switchPurchaseTab = function(status) {
+            window.appState.activePurchaseTab = status;
+            ['Processing', 'Success', 'Fail'].forEach(s => {
+                const btn = document.getElementById(`purTab${s}`);
+                btn.className = s === status ? "py-2 bg-white text-slate-800 rounded-lg shadow-sm font-bold" : "py-2 text-slate-600 rounded-lg";
+            });
+            renderPurchaseRecordsList();
+        };
+
+        function renderPurchaseRecordsList() {
+            const container = document.getElementById('purchaseRecordsListContainer');
+            const filtered = window.appState.purchaseRecords.filter(r => r.status === window.appState.activePurchaseTab);
+
+            if(filtered.length === 0) {
+                container.innerHTML = `<p class="text-xs text-slate-400 text-center py-10 bg-white rounded-2xl border border-slate-200">No ${window.appState.activePurchaseTab} purchase records</p>`;
+                return;
+            }
+
+            let html = '';
+            filtered.forEach(r => {
+                html += `
+                    <div class="bg-white p-4 rounded-2xl border border-slate-200/80 flex justify-between items-center card-shadow text-xs">
+                        <div>
+                            <p class="font-bold text-slate-800">${r.id} (${r.type})</p>
+                            <p class="text-[10px] text-slate-400 mt-0.5">${r.time}</p>
+                        </div>
+                        <div class="text-right">
+                            <p class="font-bold text-slate-900 text-sm">${r.amount.toFixed(2)} USDT</p>
+                            <span class="text-[10px] font-bold ${r.status === 'Success' ? 'text-emerald-600' : (r.status === 'Processing' ? 'text-amber-600' : 'text-rose-600')}">${r.status}</span>
+                        </div>
+                    </div>
+                `;
+            });
+            container.innerHTML = html;
+        }
+
+        window.switchCollectionTab = function(status) {
+            window.appState.activeCollectionTab = status;
+            ['Processing', 'Success', 'Fail'].forEach(s => {
+                const btn = document.getElementById(`colTab${s}`);
+                btn.className = s === status ? "py-2 bg-white text-slate-800 rounded-lg shadow-sm font-bold" : "py-2 text-slate-600 rounded-lg";
+            });
+            renderCollectionRecordsList();
+        };
+
+        function renderCollectionRecordsList() {
+            const container = document.getElementById('collectionRecordsListContainer');
+            const filtered = window.appState.collectionRecords.filter(r => r.status === window.appState.activeCollectionTab);
+
+            if(filtered.length === 0) {
+                container.innerHTML = `<p class="text-xs text-slate-400 text-center py-10 bg-white rounded-2xl border border-slate-200">No ${window.appState.activeCollectionTab} collection records</p>`;
+                return;
+            }
+
+            let html = '';
+            filtered.forEach(r => {
+                html += `
+                    <div class="bg-white p-4 rounded-2xl border border-slate-200/80 flex justify-between items-center card-shadow text-xs">
+                        <div>
+                            <p class="font-bold text-slate-800">${r.id} (${r.type})</p>
+                            <p class="text-[10px] text-slate-400 mt-0.5">${r.time}</p>
+                        </div>
+                        <div class="text-right">
+                            <p class="font-bold text-slate-900 text-sm">${r.amount.toFixed(2)} USDT</p>
+                            <span class="text-[10px] font-bold ${r.status === 'Success' ? 'text-emerald-600' : (r.status === 'Processing' ? 'text-amber-600' : 'text-rose-600')}">${r.status}</span>
+                        </div>
+                    </div>
+                `;
+            });
+            container.innerHTML = html;
+        }
+
+        function renderBalanceDetailsFull() {
+            const container = document.getElementById('balanceHistoryFullListContainer');
+            let html = '';
+            window.appState.balanceHistory.forEach(h => {
+                html += `
+                    <div class="bg-white p-4 rounded-2xl border border-slate-200/80 flex justify-between items-center card-shadow text-xs">
+                        <div>
+                            <p class="font-bold text-slate-800 text-sm">${h.title}</p>
+                            <p class="text-[10px] text-slate-400 mt-0.5">${h.time}</p>
+                        </div>
+                        <div class="text-right">
+                            <p class="font-bold text-emerald-600 text-sm">${h.amount}</p>
+                            <p class="text-[10px] text-slate-500 font-semibold mt-0.5">${h.status}</p>
+                        </div>
+                    </div>
+                `;
+            });
+            container.innerHTML = html;
+        }
+
+        function renderTodayRecordsFull() {
+            const container = document.getElementById('todayRecordsFullListContainer');
+            let html = '';
+            const allToday = [...window.appState.purchaseRecords, ...window.appState.collectionRecords];
+            if(allToday.length === 0) {
+                container.innerHTML = `<p class="text-xs text-slate-400 text-center py-10 bg-white rounded-2xl border border-slate-200">No records today</p>`;
+                return;
+            }
+            allToday.forEach(r => {
+                html += `
+                    <div class="bg-white p-4 rounded-2xl border border-slate-200/80 flex justify-between items-center card-shadow text-xs">
+                        <div>
+                            <p class="font-bold text-slate-800 text-sm">${r.id}</p>
+                            <p class="text-[10px] text-slate-400 mt-0.5">${r.type} - ${r.time}</p>
+                        </div>
+                        <div class="text-right">
+                            <p class="font-bold text-slate-900 text-sm">${r.amount.toFixed(2)} USDT</p>
+                            <span class="font-bold text-[10px] ${r.status === 'Success' ? 'text-emerald-600' : (r.status === 'Processing' ? 'text-amber-600' : 'text-rose-600')}">${r.status}</span>
+                        </div>
+                    </div>
+                `;
+            });
+            container.innerHTML = html;
+        }
+
+        function renderTeamDetailsFull() {
+            const container = document.getElementById('teamDetailsFullListContainer');
+            let html = '';
+            if(window.appState.teamMembers.length === 0) {
+                container.innerHTML = `<p class="text-xs text-slate-400 text-center py-10 bg-white rounded-2xl border border-slate-200">No team members yet</p>`;
+                return;
+            }
+            window.appState.teamMembers.forEach(m => {
+                html += `
+                    <div class="bg-white p-4 rounded-2xl border border-slate-200/80 space-y-1.5 text-xs card-shadow">
+                        <div class="flex justify-between font-bold text-slate-800">
+                            <span class="text-sm">ID: ${m.id} (${m.level})</span>
+                            <span class="text-brand-700 text-sm">${m.commission}</span>
+                        </div>
+                        <p class="font-mono text-[11px] text-slate-500 bg-slate-50 p-2 rounded-lg border border-slate-100 break-all">Wallet: ${m.address}</p>
+                        <p class="text-[10px] text-slate-400">Joined: ${m.date}</p>
+                    </div>
+                `;
+            });
+            container.innerHTML = html;
+        }
+
+        window.renderPackages = function(filterRange) {
+            const container = document.getElementById('packageListContainer');
+            if(!container) return;
+            container.innerHTML = '';
+
+            const filtered = filterRange === 'all' ? window.appState.packages : window.appState.packages.filter(p => p.range === filterRange);
+
+            filtered.forEach(pkg => {
+                const card = document.createElement('div');
+                card.className = "bg-white p-4 rounded-2xl border border-slate-200/80 space-y-3 card-shadow";
+                card.innerHTML = `
+                    <div class="flex justify-between items-start">
+                        <div class="flex items-center gap-2">
+                            <div class="w-9 h-9 bg-amber-400 rounded-lg flex items-center justify-center p-1 font-bold text-xs shadow-sm">
+                                <svg viewBox="0 0 24 24" class="w-6 h-6 fill-slate-950"><path d="M12 0L2.5 5.5v13L12 24l9.5-5.5v-13L12 0zm5.1 14.8l-5.1 3-5.1-3V9.2l5.1-3 5.1 3v5.6z"/></svg>
+                            </div>
+                            <div>
+                                <h3 class="text-base font-bold text-slate-800">${pkg.amount.toFixed(2)} USDT</h3>
+                                <p class="text-[10px] text-slate-400">Network: Binance BEP-20</p>
+                            </div>
+                        </div>
+                        <span class="text-[10px] font-mono text-slate-400">Random ID</span>
+                    </div>
+
+                    <div class="grid grid-cols-3 gap-2 py-2 bg-slate-50 rounded-xl px-3 border border-slate-100 text-center text-xs">
+                        <div>
+                            <p class="text-brand-700 font-extrabold">+${pkg.reward.toFixed(2)} USDT</p>
+                            <p class="text-[9px] text-slate-400">Reward</p>
+                        </div>
+                        <div>
+                            <p class="text-slate-800 font-bold">${pkg.rate}</p>
+                            <p class="text-[9px] text-slate-400">Fixed Rate</p>
+                        </div>
+                        <div>
+                            <p class="text-slate-800 font-bold">0</p>
+                            <p class="text-[9px] text-slate-400">Cancellations</p>
+                        </div>
+                    </div>
+
+                    <button onclick="openOrderClaimModal(${pkg.amount}, ${pkg.reward}, '${pkg.rate}')" class="w-full py-2.5 bg-brand-700 hover:bg-brand-800 text-white font-bold text-xs rounded-xl shadow-sm transition-all flex items-center justify-center gap-1">
+                        <span>Claim purchase order</span>
+                    </button>
+                `;
+                container.appendChild(card);
+            });
+        };
+
+        window.filterPackages = function(range) {
+            document.querySelectorAll('.pkg-filter-btn').forEach(btn => {
+                btn.className = "pkg-filter-btn px-3 py-1.5 bg-white text-slate-600 text-xs font-semibold rounded-lg border border-slate-200 whitespace-nowrap";
+            });
+            if(event && event.target) {
+                event.target.className = "pkg-filter-btn px-3 py-1.5 bg-brand-600 text-white text-xs font-bold rounded-lg border border-brand-600 whitespace-nowrap";
+            }
+            renderPackages(range);
+        };
+
+        window.openOrderClaimModal = function(amount, reward, rate) {
+            window.appState.currentClaimPackage = { amount, reward, rate };
+            document.getElementById('claimModalAmount').innerText = `${amount.toFixed(2)} USDT`;
+            document.getElementById('claimModalReward').innerText = `+${reward.toFixed(2)} USDT (${rate})`;
+            document.getElementById('orderClaimModal').classList.remove('hidden');
+            startClaimTimer();
+        };
+
+        window.closeOrderClaimModal = function() {
+            document.getElementById('orderClaimModal').classList.add('hidden');
+            clearInterval(window.appState.buyTimerInterval);
+        };
+
+        function startClaimTimer() {
+            clearInterval(window.appState.buyTimerInterval);
+            window.appState.claimTimerSeconds = 540;
+            const display = document.getElementById('claimTimerDisplay');
+
+            window.appState.buyTimerInterval = setInterval(() => {
+                let m = Math.floor(window.appState.claimTimerSeconds / 60);
+                let s = window.appState.claimTimerSeconds % 60;
+                display.innerText = `${m < 10 ? '0' : ''}${m}:${s < 10 ? '0' : ''}${s}`;
+
+                if (window.appState.claimTimerSeconds <= 0) {
+                    clearInterval(window.appState.buyTimerInterval);
+                    alert("Order timed out!");
+                    closeOrderClaimModal();
+                }
+                window.appState.claimTimerSeconds--;
+            }, 1000);
+        }
+
+        window.openAddWalletModal = function() {
+            document.getElementById('addWalletModal').classList.remove('hidden');
+        };
+
+        window.closeAddWalletModal = function() {
+            document.getElementById('addWalletModal').classList.add('hidden');
+        };
+
+        window.copyText = function(text, msg) {
+            navigator.clipboard.writeText(text);
+            alert(msg);
+        };
+
+        window.openSupportTelegram = function() {
+            window.open('https://t.me/USDT_BEP20_Support', '_blank');
+        };
+
+        window.openFAQModal = function() {
+            alert("FAQ: Fixed reward rate is 3% across all packages.");
+        };
+
+        window.showTutorial = function(type) {
+            alert(type === 'bep20' ? "Deposit Guide: Transfer USDT via BEP-20 network to the given address." : "Wallet Guide: Link your Binance BEP-20 address correctly.");
+        };
+    </script>
+</body>
+</html>
