@@ -1,0 +1,967 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CF Pay - Admin Panel</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Lucide Icons CDN -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        brand: {
+                            50: '#e6f7f1',
+                            100: '#cceee3',
+                            500: '#00B074',
+                            600: '#009a65',
+                            700: '#00875A',
+                            800: '#006543',
+                            900: '#00432c',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+        body { font-family: 'Inter', sans-serif; background-color: #f8fafc; color: #1e293b; }
+        .hide-scrollbar::-webkit-scrollbar { display: none; }
+        .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+    </style>
+</head>
+<body class="flex flex-col min-h-screen bg-slate-100">
+
+    <!-- ================= ADMIN LOGIN MODAL ================= -->
+    <div id="adminAuthModal" class="fixed inset-0 bg-slate-900/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+        <div class="bg-white w-full max-w-sm rounded-3xl p-6 space-y-5 shadow-2xl border border-slate-100">
+            <div class="text-center space-y-1">
+                <div class="w-12 h-12 bg-brand-50 text-brand-600 rounded-2xl flex items-center justify-center mx-auto mb-2">
+                    <i data-lucide="shield-alert" class="w-6 h-6"></i>
+                </div>
+                <h2 class="text-xl font-black text-slate-800">Admin Login</h2>
+                <p class="text-xs text-slate-400">Enter admin access password</p>
+            </div>
+            <form id="adminLoginForm" class="space-y-4">
+                <input type="password" id="adminPasswordInput" placeholder="Enter Admin Password" required class="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-xs text-slate-800 outline-none focus:border-brand-500 font-bold">
+                <button type="submit" class="w-full py-3 bg-brand-600 hover:bg-brand-700 text-white font-bold text-xs rounded-xl shadow-md transition-all uppercase tracking-wider">
+                    Access Dashboard
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- ================= TOP HEADER ================= -->
+    <header class="bg-white px-4 py-3 sticky top-0 z-30 border-b border-slate-200 flex justify-between items-center shadow-sm">
+        <div class="flex items-center gap-2">
+            <button onclick="toggleMobileMenu()" class="p-1.5 bg-slate-100 rounded-xl text-slate-700 md:hidden">
+                <i data-lucide="menu" class="w-5 h-5"></i>
+            </button>
+            <div class="w-8 h-8 bg-brand-700 text-white rounded-xl flex items-center justify-center font-black text-xs">CF</div>
+            <h1 class="text-base font-extrabold text-slate-800 tracking-tight">CF Admin Panel</h1>
+        </div>
+        <div class="flex items-center gap-2">
+            <span class="text-[10px] font-bold text-emerald-700 bg-emerald-50 px-2 py-1 rounded-full border border-emerald-200">Online</span>
+            <button onclick="adminLogout()" class="px-2.5 py-1.5 bg-rose-50 text-rose-600 text-xs font-bold rounded-xl border border-rose-200">Log Out</button>
+        </div>
+    </header>
+
+    <!-- MOBILE DROPDOWN MENU -->
+    <div id="mobileMenuDropdown" class="hidden bg-white border-b border-slate-200 p-3 space-y-2 md:hidden z-20 shadow-lg">
+        <button onclick="switchAdminTab('Dashboard'); toggleMobileMenu();" class="w-full text-left px-3 py-2 text-xs font-bold text-slate-700 hover:bg-slate-50 rounded-lg">📊 Dashboard Overview</button>
+        <button onclick="switchAdminTab('Tasks'); toggleMobileMenu();" class="w-full text-left px-3 py-2 text-xs font-bold text-slate-700 hover:bg-slate-50 rounded-lg">➕ Task Generator</button>
+        <button onclick="switchAdminTab('SellOrders'); toggleMobileMenu();" class="w-full text-left px-3 py-2 text-xs font-bold text-slate-700 hover:bg-slate-50 rounded-lg">🔄 Sell Orders (Approve/Reject)</button>
+        <button onclick="switchAdminTab('BuyOrders'); toggleMobileMenu();" class="w-full text-left px-3 py-2 text-xs font-bold text-slate-700 hover:bg-slate-50 rounded-lg">📥 Buy History (TxID Verify)</button>
+        <button onclick="switchAdminTab('Users'); toggleMobileMenu();" class="w-full text-left px-3 py-2 text-xs font-bold text-slate-700 hover:bg-slate-50 rounded-lg">👥 User Management & Blocked Balance</button>
+    </div>
+
+    <div class="flex flex-1 overflow-hidden">
+        
+        <!-- ================= SIDEBAR NAVIGATION (DESKTOP) ================= -->
+        <aside class="w-64 bg-white border-r border-slate-200 p-4 space-y-2 hidden md:block overflow-y-auto hide-scrollbar">
+            <button onclick="switchAdminTab('Dashboard')" id="sidebarDashboard" class="w-full flex items-center gap-3 px-4 py-3 bg-brand-50 text-brand-700 font-bold text-xs rounded-xl transition-all">
+                <i data-lucide="layout-dashboard" class="w-4 h-4"></i>
+                <span>Dashboard Overview</span>
+            </button>
+            <button onclick="switchAdminTab('Tasks')" id="sidebarTasks" class="w-full flex items-center gap-3 px-4 py-3 text-slate-600 hover:bg-slate-50 font-bold text-xs rounded-xl transition-all">
+                <i data-lucide="list-plus" class="w-4 h-4"></i>
+                <span>Task Generator</span>
+            </button>
+            <button onclick="switchAdminTab('SellOrders')" id="sidebarSellOrders" class="w-full flex items-center gap-3 px-4 py-3 text-slate-600 hover:bg-slate-50 font-bold text-xs rounded-xl transition-all">
+                <i data-lucide="arrow-down-left" class="w-4 h-4"></i>
+                <span>Sell Orders (Approve/Reject)</span>
+            </button>
+            <button onclick="switchAdminTab('BuyOrders')" id="sidebarBuyOrders" class="w-full flex items-center gap-3 px-4 py-3 text-slate-600 hover:bg-slate-50 font-bold text-xs rounded-xl transition-all">
+                <i data-lucide="arrow-up-right" class="w-4 h-4"></i>
+                <span>Buy History (Verify TxID)</span>
+            </button>
+            <button onclick="switchAdminTab('Users')" id="sidebarUsers" class="w-full flex items-center gap-3 px-4 py-3 text-slate-600 hover:bg-slate-50 font-bold text-xs rounded-xl transition-all">
+                <i data-lucide="users" class="w-4 h-4"></i>
+                <span>User Management & Blocked Balance</span>
+            </button>
+        </aside>
+
+        <!-- ================= MAIN CONTENT CONTAINER ================= -->
+        <main class="flex-1 p-4 md:p-6 overflow-y-auto hide-scrollbar space-y-6">
+
+            <!-- TAB 1: DASHBOARD OVERVIEW -->
+            <section id="adminTabDashboard" class="admin-tab space-y-6">
+                <h2 class="text-lg font-black text-slate-800">Platform Statistics</h2>
+                <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                    <div class="bg-white p-4 rounded-2xl border border-slate-200 card-shadow space-y-1">
+                        <p class="text-[11px] text-slate-400 font-bold">Total Users</p>
+                        <p class="text-xl font-black text-slate-800" id="statTotalUsers">0</p>
+                    </div>
+                    <div class="bg-white p-4 rounded-2xl border border-slate-200 card-shadow space-y-1">
+                        <p class="text-[11px] text-slate-400 font-bold">Total Buy Volume</p>
+                        <p class="text-xl font-black text-brand-700"><span id="statTotalBuy">0.00</span> USDT</p>
+                    </div>
+                    <div class="bg-white p-4 rounded-2xl border border-slate-200 card-shadow space-y-1">
+                        <p class="text-[11px] text-slate-400 font-bold">Pending Sell</p>
+                        <p class="text-xl font-black text-amber-600" id="statPendingSell">0</p>
+                    </div>
+                    <div class="bg-white p-4 rounded-2xl border border-slate-200 card-shadow space-y-1">
+                        <p class="text-[11px] text-slate-400 font-bold">Pending Buy</p>
+                        <p class="text-xl font-black text-amber-600" id="statPendingBuy">0</p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- TAB 2: TASK GENERATOR -->
+            <section id="adminTabTasks" class="admin-tab hidden space-y-6">
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    <!-- Task Generator Form -->
+                    <div class="bg-white p-5 rounded-2xl border border-slate-200 card-shadow space-y-4">
+                        <h2 class="text-sm font-black text-slate-800">Generate New Buy Task</h2>
+                        <div class="space-y-3 text-xs">
+                            <div>
+                                <label class="font-bold text-slate-600 block mb-1">USDT BEP-20 Payment Address</label>
+                                <input type="text" id="adminTaskAddress" placeholder="0x..." class="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 outline-none font-mono focus:border-brand-500 font-bold">
+                            </div>
+                            <div>
+                                <label class="font-bold text-slate-600 block mb-1">Task Amount (USDT)</label>
+                                <input type="number" id="adminTaskAmount" placeholder="10.00" class="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 outline-none font-mono focus:border-brand-500 font-bold">
+                            </div>
+                            <div>
+                                <label class="font-bold text-slate-600 block mb-1">Commission / Reward Rate (%)</label>
+                                <input type="text" value="3.00% (Automatic)" disabled class="w-full bg-slate-100 border border-slate-200 rounded-xl p-3 font-bold text-slate-500 cursor-not-allowed">
+                            </div>
+                            <button onclick="generateManualTask()" class="w-full py-3 bg-brand-600 hover:bg-brand-700 text-white font-bold rounded-xl shadow-md transition-all uppercase tracking-wider">
+                                Publish Task to User App
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Saved BEP-20 Addresses Manager -->
+                    <div class="bg-white p-5 rounded-2xl border border-slate-200 card-shadow space-y-4">
+                        <div class="flex justify-between items-center">
+                            <h2 class="text-sm font-black text-slate-800">Saved BEP-20 Addresses (Quick Select)</h2>
+                            <span class="text-[10px] bg-brand-50 text-brand-700 font-bold px-2 py-0.5 rounded-lg border border-brand-100" id="savedAddressCount">0 Saved</span>
+                        </div>
+                        <div class="space-y-3 text-xs">
+                            <div>
+                                <label class="font-bold text-slate-600 block mb-1">Add New Address to List</label>
+                                <div class="flex gap-2">
+                                    <input type="text" id="newSavedAddressInput" placeholder="0x... (BEP-20 Address)" class="flex-1 bg-slate-50 border border-slate-200 rounded-xl p-3 outline-none font-mono focus:border-brand-500 font-bold">
+                                    <button onclick="saveNewAddress()" class="px-4 bg-slate-800 hover:bg-slate-900 text-white font-bold rounded-xl shadow transition-all">Save</button>
+                                </div>
+                            </div>
+                            <div class="space-y-2 max-h-56 overflow-y-auto hide-scrollbar" id="savedAddressesListContainer">
+                                <!-- Rendered via JS -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Published / Active Tasks List -->
+                <div class="bg-white p-5 rounded-2xl border border-slate-200 card-shadow space-y-4">
+                    <h2 class="text-sm font-black text-slate-800">Published / Active Tasks List</h2>
+                    <div id="publishedTasksContainer" class="space-y-3">
+                        <!-- Rendered via JS -->
+                    </div>
+                </div>
+            </section>
+
+            <!-- TAB 3: SELL ORDERS MANAGEMENT -->
+            <section id="adminTabSellOrders" class="admin-tab hidden space-y-4">
+                <h2 class="text-sm font-black text-slate-800">Pending & Processing Sell Orders</h2>
+                <div id="adminSellOrdersContainer" class="space-y-3"></div>
+            </section>
+
+            <!-- TAB 4: BUY HISTORY & TXID VERIFICATION -->
+            <section id="adminTabBuyOrders" class="admin-tab hidden space-y-4">
+                <h2 class="text-sm font-black text-slate-800">Buy Orders & TxID Verification</h2>
+                <div id="adminBuyOrdersContainer" class="space-y-3"></div>
+            </section>
+
+            <!-- TAB 5: USER MANAGEMENT & BLOCKED BALANCE -->
+            <section id="adminTabUsers" class="admin-tab hidden space-y-4">
+                <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
+                    <h2 class="text-sm font-black text-slate-800">Registered Users & Blocked Balance Management</h2>
+                    
+                    <!-- Search Input Box by Referral Code -->
+                    <div class="relative w-full sm:w-72">
+                        <input type="text" id="userSearchInput" oninput="filterUserListByRefCode()" placeholder="Search by Ref Code / Phone..." class="w-full bg-white border border-slate-200 rounded-xl py-2 pl-9 pr-3 text-xs font-bold outline-none focus:border-brand-500 shadow-sm uppercase font-mono">
+                        <i data-lucide="search" class="w-4 h-4 text-slate-400 absolute left-3 top-2.5"></i>
+                    </div>
+                </div>
+
+                <div id="adminUsersListContainer" class="space-y-3"></div>
+            </section>
+
+        </main>
+    </div>
+
+    <!-- ================= USER DETAILS MODAL ================= -->
+    <div id="userDetailsModal" class="hidden fixed inset-0 bg-slate-900/80 backdrop-blur-sm z-50 flex items-center justify-center p-3 sm:p-4 overflow-y-auto">
+        <div class="bg-white w-full max-w-2xl rounded-3xl p-5 sm:p-6 space-y-5 shadow-2xl max-h-[90vh] overflow-y-auto hide-scrollbar">
+            <!-- Modal Header -->
+            <div class="flex justify-between items-center border-b border-slate-100 pb-3">
+                <div class="flex items-center gap-2">
+                    <div class="p-2 bg-brand-50 text-brand-700 rounded-xl">
+                        <i data-lucide="user-check" class="w-5 h-5"></i>
+                    </div>
+                    <div>
+                        <h3 class="text-base font-black text-slate-800" id="modalUserPhone">User Details</h3>
+                        <p class="text-[10px] text-slate-400 font-mono" id="modalUserUid">UID: -</p>
+                    </div>
+                </div>
+                <button onclick="closeUserDetailsModal()" class="p-1.5 text-slate-400 hover:text-slate-600 rounded-xl bg-slate-100">
+                    <i data-lucide="x" class="w-5 h-5"></i>
+                </button>
+            </div>
+
+            <!-- Overview Stats Grid -->
+            <div class="grid grid-cols-2 sm:grid-cols-4 gap-2.5 text-xs">
+                <div class="bg-slate-50 p-3 rounded-xl border border-slate-200/80">
+                    <p class="text-slate-400 font-semibold text-[10px]">Total Tasks Done</p>
+                    <p class="text-sm font-extrabold text-slate-800 mt-0.5" id="modalTotalTasks">0</p>
+                </div>
+                <div class="bg-slate-50 p-3 rounded-xl border border-slate-200/80">
+                    <p class="text-slate-400 font-semibold text-[10px]">Total Buy Volume</p>
+                    <p class="text-sm font-extrabold text-brand-700 mt-0.5" id="modalTotalBuy">0.00 USDT</p>
+                </div>
+                <div class="bg-slate-50 p-3 rounded-xl border border-slate-200/80">
+                    <p class="text-slate-400 font-semibold text-[10px]">Total Sell Volume</p>
+                    <p class="text-sm font-extrabold text-amber-600 mt-0.5" id="modalTotalSell">0.00 USDT</p>
+                </div>
+                <div class="bg-slate-50 p-3 rounded-xl border border-slate-200/80">
+                    <p class="text-slate-400 font-semibold text-[10px]">Referrals Count</p>
+                    <p class="text-sm font-extrabold text-blue-600 mt-0.5" id="modalTotalReferrals">0</p>
+                </div>
+            </div>
+
+            <!-- Referral Code & Referrals List Section -->
+            <div class="space-y-2 border-t border-slate-100 pt-3">
+                <div class="flex justify-between items-center">
+                    <h4 class="text-xs font-bold text-slate-800 flex items-center gap-1.5">
+                        <i data-lucide="users" class="w-4 h-4 text-brand-600"></i>
+                        <span>Referrals List</span>
+                    </h4>
+                    <span class="text-[11px] font-mono font-bold text-brand-700 bg-brand-50 px-2 py-0.5 rounded-lg border border-brand-100" id="modalUserRefCode">Ref Code: -</span>
+                </div>
+                <div id="modalReferralsContainer" class="space-y-1.5 max-h-40 overflow-y-auto hide-scrollbar"></div>
+            </div>
+
+            <!-- Orders History Section -->
+            <div class="space-y-3 border-t border-slate-100 pt-3">
+                <h4 class="text-xs font-bold text-slate-800 flex items-center gap-1.5">
+                    <i data-lucide="receipt" class="w-4 h-4 text-brand-600"></i>
+                    <span>User Order History (Buy & Sell)</span>
+                </h4>
+                <div id="modalOrdersContainer" class="space-y-2 max-h-56 overflow-y-auto hide-scrollbar"></div>
+            </div>
+
+            <button onclick="closeUserDetailsModal()" class="w-full py-2.5 bg-slate-800 hover:bg-slate-900 text-white font-bold text-xs rounded-xl shadow-md transition-all">
+                Close Details
+            </button>
+        </div>
+    </div>
+
+    <!-- ================= FIREBASE & ADMIN SCRIPT ================= -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+        import { getDatabase, ref, get, set, remove, update, onValue } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
+
+        const firebaseConfig = {
+  apiKey: "AIzaSyCctrwL3dzFIHzaRD8Eq4axuV7ZKXJSqOg",
+  authDomain: "cfpay-6e168.firebaseapp.com",
+  databaseURL: "https://cfpay-6e168-default-rtdb.firebaseio.com",
+  projectId: "cfpay-6e168",
+  storageBucket: "cfpay-6e168.firebasestorage.app",
+  messagingSenderId: "442203878830",
+  appId: "1:442203878830:web:835e9c9a49dc43aba0043f",
+  measurementId: "G-S2SXQ5E1YT"
+};
+
+        const app = initializeApp(firebaseConfig);
+        const db = getDatabase(app);
+
+        window.adminData = {
+            users: {},
+            globalClaimed: {},
+            savedAddresses: [],
+            publishedTasks: {}
+        };
+
+        let timerInterval = null;
+
+        window.toggleMobileMenu = function() {
+            const menu = document.getElementById('mobileMenuDropdown');
+            menu.classList.toggle('hidden');
+        };
+
+        document.getElementById('adminLoginForm').addEventListener('submit', (e) => {
+            e.preventDefault();
+            const pass = document.getElementById('adminPasswordInput').value.trim();
+            if (pass === 'admin123' || pass === 'CFPay2026') {
+                document.getElementById('adminAuthModal').classList.add('hidden');
+                initAdminDashboard();
+            } else {
+                alert("Incorrect Admin Password!");
+            }
+        });
+
+        window.adminLogout = function() {
+            location.reload();
+        };
+
+        window.switchAdminTab = function(tabName) {
+            ['Dashboard', 'Tasks', 'SellOrders', 'BuyOrders', 'Users'].forEach(t => {
+                document.getElementById(`adminTab${t}`).classList.add('hidden');
+                const btn = document.getElementById(`sidebar${t}`);
+                if (btn) btn.className = "w-full flex items-center gap-3 px-4 py-3 text-slate-600 hover:bg-slate-50 font-bold text-xs rounded-xl transition-all";
+            });
+            document.getElementById(`adminTab${tabName}`).classList.remove('hidden');
+            const activeBtn = document.getElementById(`sidebar${tName}`.replace('tName', tabName));
+            if(activeBtn) activeBtn.className = "w-full flex items-center gap-3 px-4 py-3 bg-brand-50 text-brand-700 font-bold text-xs rounded-xl transition-all";
+        };
+
+        function initAdminDashboard() {
+            // Listen to Users
+            const usersRef = ref(db, 'users');
+            onValue(usersRef, (snapshot) => {
+                const data = snapshot.val() || {};
+                window.adminData.users = data;
+                renderAdminDashboard();
+            });
+
+            // Listen to Saved Addresses for Task Generator
+            const savedAddrRef = ref(db, 'adminSavedAddresses');
+            onValue(savedAddrRef, (snapshot) => {
+                const data = snapshot.val() || {};
+                window.adminData.savedAddresses = Object.keys(data).map(k => ({ id: k, address: data[k] }));
+                renderSavedAddresses();
+            });
+
+            // Listen to Published Tasks
+            const tasksRef = ref(db, 'globalClaimedPackages');
+            onValue(tasksRef, (snapshot) => {
+                const data = snapshot.val() || {};
+                window.adminData.publishedTasks = data;
+                renderPublishedTasks();
+            });
+
+            // Start global timer check every second
+            if(!timerInterval) {
+                timerInterval = setInterval(() => {
+                    updateSellOrderTimers();
+                }, 1000);
+            }
+        }
+
+        window.filterUserListByRefCode = function() {
+            renderAdminDashboard();
+        };
+
+        // ================= SAVED ADDRESSES LOGIC =================
+        window.saveNewAddress = async function() {
+            const input = document.getElementById('newSavedAddressInput');
+            const addr = input.value.trim();
+            if(!addr) {
+                alert("Please enter a valid BEP-20 address!");
+                return;
+            }
+
+            const newId = 'addr_' + Date.now();
+            await set(ref(db, `adminSavedAddresses/${newId}`), addr);
+            input.value = '';
+        };
+
+        window.deleteSavedAddress = async function(id) {
+            await remove(ref(db, `adminSavedAddresses/${id}`));
+        };
+
+        window.selectSavedAddress = function(addr) {
+            document.getElementById('adminTaskAddress').value = addr;
+            alert("Address selected into task input!");
+        };
+
+        function renderSavedAddresses() {
+            const list = window.adminData.savedAddresses;
+            document.getElementById('savedAddressCount').innerText = `${list.length} Saved`;
+            const container = document.getElementById('savedAddressesListContainer');
+
+            if(list.length === 0) {
+                container.innerHTML = `<p class="text-[10px] text-slate-400 text-center py-4 bg-slate-50 rounded-xl">No saved addresses yet. Add one above.</p>`;
+                return;
+            }
+
+            let html = '';
+            list.forEach(item => {
+                html += `
+                    <div class="bg-slate-50 p-2.5 rounded-xl border border-slate-200/80 flex items-center justify-between gap-2">
+                        <span class="font-mono text-[10px] text-slate-700 font-bold truncate flex-1">${item.address}</span>
+                        <div class="flex items-center gap-1">
+                            <button onclick="selectSavedAddress('${item.address}')" class="px-2 py-1 bg-brand-600 text-white font-bold rounded-lg text-[10px]">Use</button>
+                            <button onclick="deleteSavedAddress('${item.id}')" class="p-1 bg-rose-50 text-rose-600 rounded-lg hover:bg-rose-100">
+                                <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
+                            </button>
+                        </div>
+                    </div>
+                `;
+            });
+            container.innerHTML = html;
+            lucide.createIcons();
+        }
+
+        // ================= PUBLISHED TASKS LIST =================
+        function renderPublishedTasks() {
+            const tasks = window.adminData.publishedTasks;
+            const container = document.getElementById('publishedTasksContainer');
+            const keys = Object.keys(tasks);
+
+            if(keys.length === 0) {
+                container.innerHTML = `<p class="text-xs text-slate-400 text-center py-6 bg-slate-50 rounded-2xl border border-slate-200">No active published tasks</p>`;
+                return;
+            }
+
+            let html = '';
+            keys.forEach(k => {
+                const t = tasks[k];
+                const statusColor = t.status === 'Available' ? 'bg-emerald-50 text-emerald-700 border-emerald-200' : 'bg-slate-100 text-slate-600 border-slate-200';
+                
+                html += `
+                    <div class="bg-slate-50 p-3.5 rounded-2xl border border-slate-200 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 text-xs">
+                        <div class="space-y-1">
+                            <div class="flex items-center gap-2">
+                                <span class="font-bold text-slate-800">${t.amount.toFixed(2)} USDT</span>
+                                <span class="px-2 py-0.5 text-[10px] font-bold rounded-full border ${statusColor}">${t.status}</span>
+                            </div>
+                            <p class="font-mono text-[10px] text-slate-500 truncate max-w-[280px]">Addr: ${t.address}</p>
+                            <p class="text-[10px] text-slate-400">Reward: +${(t.reward || 0).toFixed(2)} USDT (${t.rate || '3.00%'})</p>
+                        </div>
+                        <button onclick="deletePublishedTask('${k}')" class="px-3 py-1.5 bg-rose-50 hover:bg-rose-100 text-rose-600 font-bold rounded-xl border border-rose-200 transition-all flex items-center gap-1 self-end sm:self-auto">
+                            <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
+                            <span>Remove Task</span>
+                        </button>
+                    </div>
+                `;
+            });
+            container.innerHTML = html;
+            lucide.createIcons();
+        }
+
+        window.deletePublishedTask = async function(taskId) {
+            if(confirm("Are you sure you want to remove this published task?")) {
+                await remove(ref(db, `globalClaimedPackages/${taskId}`));
+            }
+        };
+
+        function renderAdminDashboard() {
+            const users = window.adminData.users;
+            let userKeys = Object.keys(users);
+            
+            document.getElementById('statTotalUsers').innerText = userKeys.length;
+
+            const searchQuery = (document.getElementById('userSearchInput')?.value || '').trim().toLowerCase();
+
+            if (searchQuery) {
+                userKeys.sort((a, b) => {
+                    const codeA = a.substring(0, 6).toLowerCase();
+                    const phoneA = (users[a].phone || '').toLowerCase();
+                    const codeB = b.substring(0, 6).toLowerCase();
+                    const phoneB = (users[b].phone || '').toLowerCase();
+
+                    const matchA = codeA.includes(searchQuery) || phoneA.includes(searchQuery);
+                    const matchB = codeB.includes(searchQuery) || phoneB.includes(searchQuery);
+
+                    if (matchA && !matchB) return -1;
+                    if (!matchA && matchB) return 1;
+                    return 0;
+                });
+            }
+
+            let totalBuy = 0;
+            let pendingSellCount = 0;
+            let pendingBuyCount = 0;
+            let allSellOrdersHtml = '';
+            let allBuyOrdersHtml = '';
+            let allUsersHtml = '';
+
+            const now = Date.now();
+            const FIVE_MINUTES_MS = 5 * 60 * 1000;
+
+            userKeys.forEach(uid => {
+                const u = users[uid];
+                const phone = u.phone || 'N/A';
+                const balance = u.balance || 0;
+                const blockedBalance = u.blockedBalance || 0;
+                const refCode = uid.substring(0, 6);
+
+                const purchases = u.purchaseRecords || [];
+                purchases.forEach(p => {
+                    if (p.status === 'Success') totalBuy += p.amount;
+                    if (p.status === 'Processing') {
+                        pendingBuyCount++;
+                        allBuyOrdersHtml += `
+                            <div class="bg-white p-4 rounded-2xl border border-slate-200 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 text-xs card-shadow">
+                                <div>
+                                    <p class="font-bold text-slate-800">User: ${phone}</p>
+                                    <p class="text-[10px] text-slate-400 font-mono">Order ID: ${p.id} | TxID: ${p.txId || 'N/A'}</p>
+                                    <p class="text-[10px] text-slate-500">Amount: ${p.amount.toFixed(2)} USDT | Reward: +${(p.reward || (p.amount * 0.03)).toFixed(2)} USDT</p>
+                                </div>
+                                <div class="flex gap-2 w-full sm:w-auto">
+                                    <button onclick="updateBuyStatus('${uid}', '${p.id}', 'Success', ${p.amount}, ${p.reward || (p.amount * 0.03)})" class="flex-1 sm:flex-none px-3 py-1.5 bg-emerald-600 text-white font-bold rounded-lg shadow">Approve</button>
+                                    <button onclick="updateBuyStatus('${uid}', '${p.id}', 'Fail', ${p.amount}, ${p.reward || (p.amount * 0.03)})" class="flex-1 sm:flex-none px-3 py-1.5 bg-rose-600 text-white font-bold rounded-lg shadow">Reject</button>
+                                </div>
+                            </div>
+                        `;
+                    }
+                });
+
+                const collections = u.collectionRecords || [];
+                collections.forEach(c => {
+                    if (c.status === 'Processing') {
+                        pendingSellCount++;
+                        const userWalletAddr = c.walletAddress || 'N/A';
+                        
+                        const createdAt = c.timestamp || (c.id && !isNaN(c.id) ? parseInt(c.id) : now);
+                        const expireAt = createdAt + FIVE_MINUTES_MS;
+                        const remainingMs = Math.max(0, expireAt - now);
+
+                        if (remainingMs <= 0) {
+                            autoRejectSellOrder(uid, c.id, c.amount);
+                            return;
+                        }
+
+                        const remainingSecs = Math.floor(remainingMs / 1000);
+                        const mins = Math.floor(remainingSecs / 60);
+                        const secs = remainingSecs % 60;
+                        const timeString = `${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
+
+                        allSellOrdersHtml += `
+                            <div class="bg-white p-4 rounded-2xl border border-slate-200 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 text-xs card-shadow relative">
+                                <div class="space-y-1.5 flex-1">
+                                    <div class="flex justify-between items-center pr-2">
+                                        <p class="font-bold text-slate-800">User: ${phone}</p>
+                                        <div class="flex items-center gap-1 bg-rose-50 text-rose-600 border border-rose-200 px-2 py-0.5 rounded-lg font-mono font-bold text-[11px] animate-pulse">
+                                            <i data-lucide="clock" class="w-3 h-3"></i>
+                                            <span class="sell-timer-display" data-expire="${expireAt}" data-uid="${uid}" data-id="${c.id}" data-amount="${c.amount}">${timeString}</span>
+                                        </div>
+                                    </div>
+                                    <p class="text-[10px] text-slate-400 font-mono">Sell ID: ${c.id}</p>
+                                    <p class="text-[10px] text-brand-700 font-bold">Amount to Send: ${c.amount.toFixed(2)} USDT</p>
+                                    
+                                    <div class="flex items-center gap-1.5 bg-slate-50 p-2 rounded-lg border border-slate-200">
+                                        <span class="text-[10px] text-slate-500 font-semibold">Wallet:</span>
+                                        <span class="font-mono text-[10px] text-slate-800 font-bold truncate max-w-[200px]" id="walletAddr_${c.id}">${userWalletAddr}</span>
+                                        <button onclick="copyText(document.getElementById('walletAddr_${c.id}').innerText, 'Wallet Address Copied!')" class="p-1 bg-white border border-slate-200 rounded text-slate-600 hover:bg-slate-100">
+                                            <i data-lucide="copy" class="w-3 h-3"></i>
+                                        </button>
+                                    </div>
+
+                                    <input type="text" id="sellTxInput_${c.id}" placeholder="Enter Blockchain TxID" class="w-full sm:w-64 bg-slate-50 border border-slate-200 rounded-lg p-2 font-mono text-[11px] outline-none font-bold">
+                                </div>
+                                <div class="flex gap-2 w-full sm:w-auto self-end sm:self-center">
+                                    <button onclick="updateSellStatus('${uid}', '${c.id}', 'Success', ${c.amount})" class="flex-1 sm:flex-none px-3 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-lg shadow">Approve Sell</button>
+                                    <button onclick="updateSellStatus('${uid}', '${c.id}', 'Fail', ${c.amount})" class="flex-1 sm:flex-none px-3 py-2 bg-rose-600 hover:bg-rose-700 text-white font-bold rounded-lg shadow">Reject & Refund</button>
+                                </div>
+                            </div>
+                        `;
+                    }
+                });
+
+                const isMatchedBySearch = searchQuery && (refCode.toLowerCase().includes(searchQuery) || phone.toLowerCase().includes(searchQuery));
+
+                allUsersHtml += `
+                    <div class="bg-white p-4 rounded-2xl border ${isMatchedBySearch ? 'border-brand-500 ring-2 ring-brand-500/20' : 'border-slate-200'} space-y-3 card-shadow text-xs transition-all">
+                        <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
+                            <div>
+                                <div class="flex items-center gap-2">
+                                    <p class="font-bold text-slate-900 text-sm">Phone: ${phone}</p>
+                                    <span class="px-2 py-0.5 bg-brand-50 text-brand-700 text-[10px] font-mono font-bold rounded-lg border border-brand-100">Ref Code: ${refCode}</span>
+                                </div>
+                                <p class="text-[10px] text-slate-500 mt-0.5">UID: ${uid} | Balance: <span class="font-black text-brand-700">${balance.toFixed(2)} USDT</span> | Blocked: <span class="font-black text-amber-600">${blockedBalance.toFixed(2)} USDT</span></p>
+                            </div>
+                            <button onclick="openUserDetailsModal('${uid}')" class="px-3 py-1.5 bg-brand-50 hover:bg-brand-100 text-brand-700 font-bold rounded-xl border border-brand-200 transition-all flex items-center gap-1 text-xs self-end sm:self-auto">
+                                <i data-lucide="eye" class="w-3.5 h-3.5"></i>
+                                <span>View Details</span>
+                            </button>
+                        </div>
+                        
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 pt-2 border-t border-slate-100">
+                            <div class="flex items-center gap-2">
+                                <input type="number" id="blockedInput_${uid}" value="${blockedBalance}" placeholder="Block Limit" class="flex-1 bg-slate-50 border border-slate-200 rounded-lg p-2 text-xs font-bold outline-none">
+                                <button onclick="updateBlockedBalance('${uid}')" class="px-3 py-2 bg-amber-600 hover:bg-amber-700 text-white font-bold rounded-lg whitespace-nowrap">Set Block</button>
+                            </div>
+                            <div class="flex items-center gap-2">
+                                <input type="number" id="bonusInput_${uid}" placeholder="Bonus Amount" class="flex-1 bg-slate-50 border border-slate-200 rounded-lg p-2 text-xs font-bold outline-none">
+                                <button onclick="addUserBonus('${uid}')" class="px-3 py-2 bg-brand-600 hover:bg-brand-700 text-white font-bold rounded-lg whitespace-nowrap">Add Bonus</button>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            });
+
+            document.getElementById('statTotalBuy').innerText = totalBuy.toFixed(2);
+            document.getElementById('statPendingSell').innerText = pendingSellCount;
+            document.getElementById('statPendingBuy').innerText = pendingBuyCount;
+
+            document.getElementById('adminSellOrdersContainer').innerHTML = allSellOrdersHtml || '<p class="text-xs text-slate-400 text-center py-10 bg-white rounded-2xl border">No pending sell orders</p>';
+            document.getElementById('adminBuyOrdersContainer').innerHTML = allBuyOrdersHtml || '<p class="text-xs text-slate-400 text-center py-10 bg-white rounded-2xl border">No pending buy orders</p>';
+            document.getElementById('adminUsersListContainer').innerHTML = allUsersHtml || '<p class="text-xs text-slate-400 text-center py-10 bg-white rounded-2xl border">No registered users</p>';
+            
+            lucide.createIcons();
+        }
+
+        function updateSellOrderTimers() {
+            const displays = document.querySelectorAll('.sell-timer-display');
+            const now = Date.now();
+
+            displays.forEach(el => {
+                const expireAt = parseInt(el.getAttribute('data-expire'));
+                const uid = el.getAttribute('data-uid');
+                const sellId = el.getAttribute('data-id');
+                const amount = parseFloat(el.getAttribute('data-amount'));
+
+                const remainingMs = Math.max(0, expireAt - now);
+
+                if (remainingMs <= 0) {
+                    el.innerText = '00:00';
+                    autoRejectSellOrder(uid, sellId, amount);
+                } else {
+                    const remainingSecs = Math.floor(remainingMs / 1000);
+                    const mins = Math.floor(remainingSecs / 60);
+                    const secs = remainingSecs % 60;
+                    el.innerText = `${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
+                }
+            });
+        }
+
+        async function autoRejectSellOrder(uid, sellId, sellAmount) {
+            const userRef = ref(db, 'users/' + uid);
+            const snap = await get(userRef);
+            
+            if (snap.exists()) {
+                const uData = snap.val();
+                let currentBalance = uData.balance || 0;
+                const recs = uData.collectionRecords || [];
+
+                let isAlreadyProcessed = false;
+                let updatedRecs = recs.map(r => {
+                    if (r.id === sellId) {
+                        if (r.status !== 'Processing') isAlreadyProcessed = true;
+                        return { ...r, status: 'Fail' };
+                    }
+                    return r;
+                });
+
+                if (isAlreadyProcessed) return;
+
+                currentBalance += sellAmount;
+                const exactTime = new Date().toLocaleString('en-US', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit', hour12: true });
+                let updatedHistory = uData.balanceHistory || [];
+
+                updatedHistory = [{
+                    title: 'Sell Order Expired & Refunded',
+                    amount: `+${sellAmount.toFixed(2)} USDT`,
+                    status: 'Success',
+                    time: exactTime
+                }, ...updatedHistory];
+
+                await update(userRef, {
+                    balance: currentBalance,
+                    collectionRecords: updatedRecs,
+                    balanceHistory: updatedHistory
+                });
+            }
+        }
+
+        window.openUserDetailsModal = function(uid) {
+            const user = window.adminData.users[uid];
+            if (!user) return;
+
+            const phone = user.phone || 'N/A';
+            const shortCode = uid.substring(0, 6);
+
+            document.getElementById('modalUserPhone').innerText = `Phone: ${phone}`;
+            document.getElementById('modalUserUid').innerText = `UID: ${uid}`;
+            document.getElementById('modalUserRefCode').innerText = `Ref Code: ${shortCode}`;
+
+            const purchases = user.purchaseRecords || [];
+            const collections = user.collectionRecords || [];
+
+            const successPurchases = purchases.filter(p => p.status === 'Success');
+            const successCollections = collections.filter(c => c.status === 'Success');
+
+            const totalTasksCount = successPurchases.length;
+            const totalBuyVolume = successPurchases.reduce((sum, p) => sum + (p.amount || 0), 0);
+            const totalSellVolume = successCollections.reduce((sum, c) => sum + (c.amount || 0), 0);
+
+            document.getElementById('modalTotalTasks').innerText = totalTasksCount;
+            document.getElementById('modalTotalBuy').innerText = `${totalBuyVolume.toFixed(2)} USDT`;
+            document.getElementById('modalTotalSell').innerText = `${totalSellVolume.toFixed(2)} USDT`;
+
+            const team = user.teamMembers || [];
+            document.getElementById('modalTotalReferrals').innerText = team.length;
+
+            const refsContainer = document.getElementById('modalReferralsContainer');
+            if (team.length === 0) {
+                refsContainer.innerHTML = `<p class="text-[11px] text-slate-400 bg-slate-50 p-3 rounded-xl text-center border border-slate-100">No referrals invited yet.</p>`;
+            } else {
+                let refHtml = '';
+                team.forEach(m => {
+                    let refUserTaskCount = 0;
+                    const foundUserKey = Object.keys(window.adminData.users).find(k => k.substring(0, 6) === m.id || (window.adminData.users[k].phone && window.adminData.users[k].phone === m.address));
+                    
+                    if (foundUserKey && window.adminData.users[foundUserKey]) {
+                        const refPurchases = window.adminData.users[foundUserKey].purchaseRecords || [];
+                        refUserTaskCount = refPurchases.filter(p => p.status === 'Success').length;
+                    }
+
+                    refHtml += `
+                        <div class="bg-slate-50 p-2.5 rounded-xl border border-slate-200/80 flex justify-between items-center text-xs">
+                            <div>
+                                <p class="font-bold text-slate-800">ID/Code: <span class="font-mono text-brand-700">${m.id}</span> (${m.level || 'Level 1'})</p>
+                                <p class="text-[10px] text-slate-400 font-mono mt-0.5">${m.address || 'Phone/Wallet N/A'}</p>
+                            </div>
+                            <div class="text-right">
+                                <span class="px-2 py-0.5 bg-brand-50 text-brand-700 text-[10px] font-bold rounded-md border border-brand-100 block mb-0.5">${refUserTaskCount} Tasks Done</span>
+                                <span class="text-[9px] text-slate-400">${m.date || 'N/A'}</span>
+                            </div>
+                        </div>
+                    `;
+                });
+                refsContainer.innerHTML = refHtml;
+            }
+
+            const ordersContainer = document.getElementById('modalOrdersContainer');
+            const allOrders = [
+                ...purchases.map(p => ({ ...p, category: 'Buy Order' })),
+                ...collections.map(c => ({ ...c, category: 'Sell Order' }))
+            ].sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0));
+
+            if (allOrders.length === 0) {
+                ordersContainer.innerHTML = `<p class="text-[11px] text-slate-400 bg-slate-50 p-3 rounded-xl text-center border border-slate-100">No order history found for this user.</p>`;
+            } else {
+                let orderHtml = '';
+                allOrders.forEach(o => {
+                    const isBuy = o.category === 'Buy Order';
+                    const statusClass = o.status === 'Success' ? 'bg-emerald-50 text-emerald-700 border-emerald-200' : (o.status === 'Processing' ? 'bg-amber-50 text-amber-700 border-amber-200' : 'bg-rose-50 text-rose-700 border-rose-200');
+                    
+                    orderHtml += `
+                        <div class="bg-slate-50 p-2.5 rounded-xl border border-slate-200/80 flex justify-between items-center text-xs">
+                            <div class="space-y-0.5">
+                                <div class="flex items-center gap-1.5">
+                                    <span class="px-1.5 py-0.2 ${isBuy ? 'bg-blue-100 text-blue-700' : 'bg-purple-100 text-purple-700'} text-[9px] font-black rounded uppercase">${o.category}</span>
+                                    <span class="font-mono text-[10px] text-slate-600 font-bold">${o.id}</span>
+                                </div>
+                                <p class="text-[10px] text-slate-400">${o.time || 'N/A'}</p>
+                            </div>
+                            <div class="text-right space-y-0.5">
+                                <p class="font-extrabold ${isBuy ? 'text-brand-700' : 'text-slate-800'} text-xs">${(o.amount || 0).toFixed(2)} USDT</p>
+                                <span class="px-2 py-0.5 text-[9px] font-bold border rounded-full ${statusClass} inline-block">${o.status}</span>
+                            </div>
+                        </div>
+                    `;
+                });
+                ordersContainer.innerHTML = orderHtml;
+            }
+
+            document.getElementById('userDetailsModal').classList.remove('hidden');
+            lucide.createIcons();
+        };
+
+        window.closeUserDetailsModal = function() {
+            document.getElementById('userDetailsModal').classList.add('hidden');
+        };
+
+        window.generateManualTask = async function() {
+            const addr = document.getElementById('adminTaskAddress').value.trim();
+            const amt = parseFloat(document.getElementById('adminTaskAmount').value);
+
+            if(!addr || !amt) {
+                alert("Please provide valid address and amount!");
+                return;
+            }
+
+            const newPkgId = Date.now();
+            const reward = amt * 0.03;
+
+            await set(ref(db, `globalClaimedPackages/pkg_${newPkgId}`), {
+                status: 'Available',
+                address: addr,
+                amount: amt,
+                reward: reward,
+                rate: '3.00%'
+            });
+
+            alert("Task generated successfully and published to user apps!");
+            document.getElementById('adminTaskAddress').value = '';
+            document.getElementById('adminTaskAmount').value = '';
+        };
+
+        window.updateBlockedBalance = async function(uid) {
+            const val = parseFloat(document.getElementById(`blockedInput_${uid}`).value);
+            if(isNaN(val) || val < 0) {
+                alert("Please enter a valid blocked balance amount!");
+                return;
+            }
+
+            const userRef = ref(db, 'users/' + uid);
+            await update(userRef, { blockedBalance: val });
+            alert(`User's Blocked / Secured Balance updated to ${val.toFixed(2)} USDT successfully!`);
+        };
+
+        window.updateSellStatus = async function(uid, sellId, newStatus, sellAmount) {
+            const txInput = document.getElementById(`sellTxInput_${sellId}`);
+            const txId = txInput ? txInput.value.trim() : '';
+
+            if (newStatus === 'Success' && !txId) {
+                alert("Please enter the blockchain transaction ID (TxID) before approving!");
+                return;
+            }
+
+            const userRef = ref(db, 'users/' + uid);
+            const snap = await get(userRef);
+            if(snap.exists()) {
+                const uData = snap.val();
+                let currentBalance = uData.balance || 0;
+                const recs = uData.collectionRecords || [];
+                
+                let updatedRecs = recs.map(r => {
+                    if (r.id === sellId) {
+                        return { ...r, status: newStatus, txId: txId || r.txId };
+                    }
+                    return r;
+                });
+
+                const exactTime = new Date().toLocaleString('en-US', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit', hour12: true });
+                let updatedHistory = uData.balanceHistory || [];
+
+                if (newStatus === 'Success') {
+                    updatedHistory = [{
+                        title: 'Sell Order Completed',
+                        amount: `-${sellAmount.toFixed(2)} USDT`,
+                        status: 'Success',
+                        time: exactTime
+                    }, ...updatedHistory];
+                } else if (newStatus === 'Fail') {
+                    currentBalance += sellAmount;
+                    updatedHistory = [{
+                        title: 'Sell Order Rejected (Refunded)',
+                        amount: `+${sellAmount.toFixed(2)} USDT`,
+                        status: 'Success',
+                        time: exactTime
+                    }, ...updatedHistory];
+                }
+
+                await update(userRef, {
+                    balance: currentBalance,
+                    collectionRecords: updatedRecs,
+                    balanceHistory: updatedHistory
+                });
+
+                alert(`Sell order marked as ${newStatus === 'Success' ? 'Completed' : 'Rejected'}!`);
+            }
+        };
+
+        window.updateBuyStatus = async function(uid, buyId, newStatus, buyAmount, rewardAmount) {
+            const userRef = ref(db, 'users/' + uid);
+            const snap = await get(userRef);
+            if(snap.exists()) {
+                const uData = snap.val();
+                let currentBalance = uData.balance || 0;
+                const recs = uData.purchaseRecords || [];
+                
+                const updatedRecs = recs.map(r => r.id === buyId ? { ...r, status: newStatus } : r);
+
+                const exactTime = new Date().toLocaleString('en-US', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit', hour12: true });
+                let updatedHistory = uData.balanceHistory || [];
+
+                if (newStatus === 'Success') {
+                    const totalCredit = buyAmount + rewardAmount;
+                    currentBalance += totalCredit;
+
+                    updatedHistory = [
+                        {
+                            title: 'Buy Task Principal Return',
+                            amount: `+${buyAmount.toFixed(2)} USDT`,
+                            status: 'Success',
+                            time: exactTime
+                        },
+                        {
+                            title: 'Buy Task Reward',
+                            amount: `+${rewardAmount.toFixed(2)} USDT`,
+                            status: 'Success',
+                            time: exactTime
+                        },
+                        ...updatedHistory
+                    ];
+                }
+
+                await update(userRef, {
+                    balance: currentBalance,
+                    purchaseRecords: updatedRecs,
+                    balanceHistory: updatedHistory
+                });
+
+                alert(`Buy order marked as ${newStatus}! Principal & Reward added to balance.`);
+            }
+        };
+
+        window.addUserBonus = async function(uid) {
+            const inputVal = parseFloat(document.getElementById(`bonusInput_${uid}`).value);
+            if(!inputVal || inputVal <= 0) {
+                alert("Please enter a valid bonus amount!");
+                return;
+            }
+
+            const userRef = ref(db, 'users/' + uid);
+            const snap = await get(userRef);
+            if(snap.exists()) {
+                const uData = snap.val();
+                const currentBal = uData.balance || 0;
+                const newBal = currentBal + inputVal;
+
+                const exactTime = new Date().toLocaleString('en-US', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit', hour12: true });
+                const historyItem = {
+                    title: 'System Credit',
+                    amount: `+${inputVal.toFixed(2)} USDT`,
+                    status: 'Success',
+                    time: exactTime
+                };
+                const updatedHistory = [historyItem, ...(uData.balanceHistory || [])];
+
+                await update(userRef, {
+                    balance: newBal,
+                    balanceHistory: updatedHistory
+                });
+
+                alert(`Successfully added ${inputVal.toFixed(2)} USDT bonus to user!`);
+                document.getElementById(`bonusInput_${uid}`).value = '';
+            }
+        };
+
+        window.copyText = function(text, msg) {
+            navigator.clipboard.writeText(text);
+            alert(msg);
+        };
+    </script>
+</body>
+</html>
